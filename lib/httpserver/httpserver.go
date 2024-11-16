@@ -25,6 +25,7 @@ import (
 	"github.com/valyala/fastrand"
 
 	"github.com/VictoriaMetrics/VictoriaMetrics/lib/appmetrics"
+	"github.com/VictoriaMetrics/VictoriaMetrics/lib/auth/ldap"
 	"github.com/VictoriaMetrics/VictoriaMetrics/lib/fasttime"
 	"github.com/VictoriaMetrics/VictoriaMetrics/lib/flagutil"
 	"github.com/VictoriaMetrics/VictoriaMetrics/lib/logger"
@@ -246,7 +247,7 @@ func stop(addr string) error {
 
 func gzipHandler(s *server, rh RequestHandler) http.HandlerFunc {
 	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		handlerWrapper(s, w, r, rh)
+		HandlerWrapper(s, w, r, rh)
 	})
 	if *disableResponseCompression {
 		return h
@@ -278,7 +279,7 @@ var hostname = func() string {
 	return h
 }()
 
-func handlerWrapper(s *server, w http.ResponseWriter, r *http.Request, rh RequestHandler) {
+func HandlerWrapper(s *server, w http.ResponseWriter, r *http.Request, rh RequestHandler) {
 	// All the VictoriaMetrics code assumes that panic stops the process.
 	// Unfortunately, the standard net/http.Server recovers from panics in request handlers,
 	// so VictoriaMetrics state can become inconsistent after the recovered panic.
@@ -292,6 +293,10 @@ func handlerWrapper(s *server, w http.ResponseWriter, r *http.Request, rh Reques
 			os.Exit(1)
 		}
 	}()
+
+	if ldap.IsUnauthorized(w, r) {
+		return
+	}
 
 	h := w.Header()
 	if *headerHSTS != "" {

@@ -1,0 +1,11 @@
+dn: uid=user123,ou=users,dc=example,dc=com
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: organizationalPerson
+cn: New User
+sn: User
+uid: user123
+userPassword: pass123
+uidNumber: 1000
+gidNumber: 1000
+homeDirectory: /home/user123

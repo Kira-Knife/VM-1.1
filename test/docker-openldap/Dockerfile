@@ -1,0 +1,21 @@
+FROM ubuntu:24.04
+
+RUN apt-get update && \
+    DEBIAN_FRONTEND=noninteractive \
+    apt-get install --no-install-recommends -y \
+        slapd \
+        ldap-utils \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN mv /etc/ldap /etc/ldap.dist
+
+COPY modules/ /etc/ldap.dist/modules
+
+COPY entrypoint.sh /entrypoint.sh
+
+EXPOSE 389
+
+ENTRYPOINT ["/entrypoint.sh"]
+
+CMD ["slapd", "-d", "32768", "-u", "openldap", "-g", "openldap"]
