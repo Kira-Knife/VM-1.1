@@ -7,6 +7,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/VictoriaMetrics/VictoriaMetrics/lib/auth/ldap"
 	"github.com/VictoriaMetrics/VictoriaMetrics/lib/httpserver"
 	"github.com/VictoriaMetrics/VictoriaMetrics/lib/logger"
 	"github.com/VictoriaMetrics/VictoriaMetrics/lib/netutil"
@@ -44,7 +45,7 @@ func MustStart(addr string, useProxyProtocol bool, insertHandler func(r *http.Re
 //
 // MustStop must be called on the returned server when it is no longer needed.
 func MustServe(ln net.Listener, insertHandler func(r *http.Request) error) *Server {
-	h := newRequestHandler(insertHandler)
+	h := NewRequestHandler(insertHandler)
 	hs := &http.Server{
 		Handler:           h,
 		ReadHeaderTimeout: 5 * time.Second,
@@ -87,8 +88,11 @@ func (s *Server) MustStop() {
 	logger.Infof("OpenTSDB HTTP server at %q has been stopped", s.ln.Addr())
 }
 
-func newRequestHandler(insertHandler func(r *http.Request) error) http.Handler {
+func NewRequestHandler(insertHandler func(r *http.Request) error) http.Handler {
 	rh := func(w http.ResponseWriter, r *http.Request) {
+		if ldap.IsUnauthorized(w, r) {
+			return
+		}
 		if !httpserver.CheckBasicAuth(w, r) {
 			return
 		}

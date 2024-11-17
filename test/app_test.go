@@ -10,6 +10,7 @@ import (
 
 	"github.com/VictoriaMetrics/VictoriaMetrics/lib/auth/ldap"
 	"github.com/VictoriaMetrics/VictoriaMetrics/lib/httpserver"
+	"github.com/VictoriaMetrics/VictoriaMetrics/lib/ingestserver/opentsdbhttp"
 	. "github.com/VictoriaMetrics/VictoriaMetrics/lib/lib"
 	. "github.com/onsi/gomega"
 )
@@ -68,12 +69,24 @@ func модульАвторизацииПодключаетсяКLDAPСерве�
 	ldap.Init()
 }
 
-func вызываетсяТочкаВходаТребующаяАвторизации(user, pass string) {
-	req := httptest.NewRequest(http.MethodGet, "/-/ready", nil)
-	req.SetBasicAuth(user, pass)
-
+func вызываетсяТочкаВхода(entry, user, pass string) {
 	w := httptest.NewRecorder()
-	httpserver.HandlerWrapper(nil, w, req, nil)
+
+	switch entry {
+	case "httpserver":
+		req := httptest.NewRequest(http.MethodGet, "/-/ready", nil)
+		req.SetBasicAuth(user, pass)
+		httpserver.HandlerWrapper(nil, w, req, nil)
+	case "ingestserver/opentsdbhttp":
+		rh := opentsdbhttp.NewRequestHandler(func(r *http.Request) error {
+			return nil
+		})
+		req := httptest.NewRequest(http.MethodPut, "/put", nil)
+		req.SetBasicAuth(user, pass)
+		rh.ServeHTTP(w, req)
+	default:
+		panic("entry?")
+	}
 
 	t.resp = w.Result()
 }
@@ -90,7 +103,7 @@ func полученаОшибкаАвторизации() {
 }
 
 func полученУспешныйОтвет() {
-	Ω(t.resp.StatusCode).To(Be(200), "полученУспешныйОтвет")
+	Ω(t.resp.StatusCode).To(BeElementOf([]int{200, 204}), "полученУспешныйОтвет")
 	_ = t.resp.Body.Close()
 }
 
