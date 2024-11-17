@@ -1,5 +1,12 @@
 # VictoriaMetrics
 
+## New functionality
+* LDAP auth support
+
+[Tests](test/README.md) are in separate directory - to minimize changes to the whole project.
+
+## Main
+
 [![Latest Release](https://img.shields.io/github/release/VictoriaMetrics/VictoriaMetrics.svg?style=flat-square)](https://github.com/VictoriaMetrics/VictoriaMetrics/releases/latest)
 [![Docker Pulls](https://img.shields.io/docker/pulls/victoriametrics/victoria-metrics.svg?maxAge=604800)](https://hub.docker.com/r/victoriametrics/victoria-metrics)
 [![Slack](https://img.shields.io/badge/join%20slack-%23victoriametrics-brightgreen.svg)](https://slack.victoriametrics.com/)
@@ -68,7 +75,7 @@ In addition, the Enterprise version includes extra features:
 
 We strictly apply security measures in everything we do. VictoriaMetrics has achieved security certifications for Database Software Development and Software-Based Monitoring Services. See [Security page](https://victoriametrics.com/security/) for more details.
 
-## Benchmarks 
+## Benchmarks
 
 Some good benchmarks VictoriaMetrics achieved:
 
