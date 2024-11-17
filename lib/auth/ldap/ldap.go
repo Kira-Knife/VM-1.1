@@ -9,14 +9,33 @@ import (
 )
 
 var (
-	LDAP_URL = "ldap://localhost:389"
+	LDAP_URL   = "ldap://localhost:389"
+	connection *go_ldap.Conn
 )
 
 func init() {
+	// Initing here - to minimize changes to the whole project
+	Init()
+}
+func Init() {
 	v, ok := os.LookupEnv("LDAP_URL")
 	if ok {
 		LDAP_URL = v
 	}
+
+	l, err := go_ldap.DialURL(LDAP_URL)
+	if err != nil {
+		log.Printf("LDAP auth will fail: connect to LDAP server error: %v", err)
+		return
+	}
+
+	connection = l
+}
+func Close() {
+	if connection != nil {
+		connection.Close()
+	}
+	connection = nil
 }
 
 func IsUnauthorized(w http.ResponseWriter, r *http.Request) bool {
@@ -30,16 +49,14 @@ func IsAuthorized(w http.ResponseWriter, r *http.Request) bool {
 		return false
 	}
 
-	_ = go_ldap.DialURL
-	l, err := go_ldap.DialURL(LDAP_URL)
-	if err != nil {
+	if connection == nil {
+		log.Printf("LDAP auth error: not connected to LDAP server")
 		http.Error(w, "", http.StatusUnauthorized)
 		return false
 	}
-	defer l.Close()
 
 	dn := "uid=" + username + ",ou=users,dc=example,dc=com"
-	err = l.Bind(dn, password)
+	err := connection.Bind(dn, password)
 	if err != nil {
 		log.Printf("LDAP auth error: %v", err)
 		http.Error(w, "", http.StatusUnauthorized)

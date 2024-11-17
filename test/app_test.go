@@ -6,7 +6,9 @@ import (
 	"flag"
 	"net/http"
 	"net/http/httptest"
+	"os"
 
+	"github.com/VictoriaMetrics/VictoriaMetrics/lib/auth/ldap"
 	"github.com/VictoriaMetrics/VictoriaMetrics/lib/httpserver"
 	. "github.com/VictoriaMetrics/VictoriaMetrics/lib/lib"
 	. "github.com/onsi/gomega"
@@ -37,7 +39,6 @@ func resetTestData() {
 
 func beforeSuite() {
 	flag.Parse()
-	// os.Setenv("LDAP_URL", "ldap://localhost:389")
 }
 func afterSuite() {
 }
@@ -47,6 +48,7 @@ func beforeScenario() {
 }
 func afterScenario() {
 	ОстановитьOpenLDAP()
+	ldap.Close()
 }
 
 // -----------------------
@@ -56,6 +58,14 @@ func серверOpenLDAP() {
 
 func наСервереСуществуетПользовательСПаролем(user, pass string) {
 	ДобавитьOpenLDAPПользователя()
+}
+
+func другойАдресLDAPСервера(addr string) {
+	os.Setenv("LDAP_URL", addr)
+}
+
+func модульАвторизацииПодключаетсяКLDAPСерверу() {
+	ldap.Init()
 }
 
 func вызываетсяТочкаВходаТребующаяАвторизации(user, pass string) {
