@@ -27,6 +27,7 @@ const (
 	OpenLDAP_TCPAddr       = "localhost:389"
 	TestConfigsOpenLDAP    = "configs"
 	DEBUG_SHOW_DOCKER_LOGS = false
+	// DEBUG_SHOW_DOCKER_LOGS = true
 )
 
 type testData struct {
@@ -69,6 +70,10 @@ func наСервереСуществуетПользовательСПарол�
 }
 func наСервереПользовательСИстёкшимПаролем(arg1 string) {
 	OpenLDAPПользовательсИстёкшимПаролем()
+}
+
+func наСервереПользовательОтключён(arg1 string) {
+	OpenLDAPПользовательОтключён()
 }
 
 func другойАдресLDAPСервера(addr string) {
@@ -165,6 +170,14 @@ func OpenLDAPПользовательсИстёкшимПаролем() {
 	Bash(`sudo docker exec -i \
         ` + OpenLDAPContainerName + ` \
 		/conf/expire_user_pass \
+        `)
+}
+
+func OpenLDAPПользовательОтключён() {
+	Bash(`sudo docker exec -i \
+        ` + OpenLDAPContainerName + ` \
+		/conf/disable_user \
+		&> /dev/null \
         `)
 }
 
