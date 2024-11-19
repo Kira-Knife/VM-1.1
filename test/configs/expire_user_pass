@@ -1,0 +1,30 @@
+#!/bin/bash
+
+#set -e
+set -vx
+
+ADMIN=" -x -D cn=admin,dc=example,dc=com -w admin_pass "
+
+#ldapsearch $ADMIN -b "cn=default,ou=policies,dc=example,dc=com" "(cn=default)"
+
+#ldapmodify $ADMIN <<EOF
+#dn: cn=default,ou=policies,dc=example,dc=com
+#changetype: modify
+#replace: pwdMaxAge
+#pwdMaxAge: 1
+#EOF
+
+#ldapsearch $ADMIN -b "cn=default,ou=policies,dc=example,dc=com" "(cn=default)"
+
+#ldapmodify -x -D "cn=admin,dc=example,dc=com" -w admin_pass <<EOF
+#dn: uid=user123,ou=users,dc=example,dc=com
+#changetype: modify
+#replace: pwdLastSet
+#pwdLastSet: 0
+#EOF
+
+# test user, with requesting error reason
+#ldapsearch -x -D "uid=user123,ou=users,dc=example,dc=com" -w pass123 \
+#    -E pr=1 \
+#    -b "dc=example,dc=com" "(uid=user123)"
+

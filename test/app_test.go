@@ -4,9 +4,12 @@ import (
 	. "VictoriaMetrics/test/pkg/testgodoglib"
 	. "VictoriaMetrics/test/pkg/testlib"
 	"flag"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"strings"
+	"time"
 
 	"github.com/VictoriaMetrics/VictoriaMetrics/lib/auth/ldap"
 	"github.com/VictoriaMetrics/VictoriaMetrics/lib/httpserver"
@@ -57,8 +60,15 @@ func серверOpenLDAP() {
 	ЗапуститьOpenLDAP()
 }
 
+func политикаПаролей() {
+	OpenLDAPЗадатьПолитикуПаролей()
+}
+
 func наСервереСуществуетПользовательСПаролем(user, pass string) {
 	ДобавитьOpenLDAPПользователя()
+}
+func наСервереПользовательСИстёкшимПаролем(arg1 string) {
+	OpenLDAPПользовательсИстёкшимПаролем()
 }
 
 func другойАдресLDAPСервера(addr string) {
@@ -91,20 +101,22 @@ func вызываетсяТочкаВхода(entry, user, pass string) {
 	t.resp = w.Result()
 }
 
-func полученаОшибкаАвторизации() {
-	Ω(t.resp.StatusCode).To(Be(401), "полученаОшибкаАвторизации")
-
-	d := make([]byte, 10)
-	n, err := t.resp.Body.Read(d)
-	Ok(err)
-
-	Ω(n).To(BeNumerically("<=", 1), "полученаОшибкаАвторизации: body length")
-	_ = t.resp.Body.Close()
-}
-
 func полученУспешныйОтвет() {
 	Ω(t.resp.StatusCode).To(BeElementOf([]int{200, 204}), "полученУспешныйОтвет")
 	_ = t.resp.Body.Close()
+}
+
+func полученаОшибкаАвторизации(msg string) {
+	Ω(t.resp.StatusCode).To(Be(401), "полученаОшибкаАвторизации")
+
+	d, err := io.ReadAll(t.resp.Body)
+	Ok(err)
+	defer t.resp.Body.Close()
+
+	s := string(d)
+	s = strings.TrimSpace(s)
+
+	Ω(s).To(Be(msg), "полученаОшибкаАвторизации: msg")
 }
 
 // helpers
@@ -121,16 +133,25 @@ func ЗапуститьOpenLDAP() {
         \
         -e SLAPD_PASSWORD=` + SLAPD_PASSWORD + ` \
         -e SLAPD_DOMAIN=` + SLAPD_DOMAIN + ` \
-        \
+		-e SLAPD_ADDITIONAL_MODULES=ppolicy \
+		\
         -u 0 \
-        \
+		\
         ` + OpenLDAPImageName + ` >/dev/null`)
-
-	ЖдатьОткрытияАдресПорта(OpenLDAP_TCPAddr, 3000)
 
 	if DEBUG_SHOW_DOCKER_LOGS {
 		Bash(`sudo docker logs -f ` + OpenLDAPContainerName + ` &`)
 	}
+
+	ЖдатьОткрытияАдресПорта(OpenLDAP_TCPAddr, 3000)
+}
+
+func OpenLDAPЗадатьПолитикуПаролей() {
+	Bash(`sudo docker exec -i \
+		` + OpenLDAPContainerName + ` \
+		/conf/set_password_policy \
+		&> /dev/null \
+		`)
 }
 
 func ДобавитьOpenLDAPПользователя() {
@@ -140,7 +161,18 @@ func ДобавитьOpenLDAPПользователя() {
         `)
 }
 
+func OpenLDAPПользовательсИстёкшимПаролем() {
+	Bash(`sudo docker exec -i \
+        ` + OpenLDAPContainerName + ` \
+		/conf/expire_user_pass \
+        `)
+}
+
 func ОстановитьOpenLDAP() {
 	// Bash(`sudo docker logs ` + OpenLDAPContainerName)
 	Bash(`sudo docker rm -f ` + OpenLDAPContainerName + "&>/dev/null")
+}
+
+func пауза() {
+	time.Sleep(2000 * time.Millisecond)
 }
