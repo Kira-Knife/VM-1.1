@@ -6,6 +6,7 @@ ulimit -n 8192
 
 
 set -e
+#set -x
 
 SLAPD_FORCE_RECONFIGURE="${SLAPD_FORCE_RECONFIGURE:-false}"
 
@@ -87,6 +88,8 @@ EOF
                     sed -i "s/\(olcPPolicyDefault: \)PPOLICY_DN/\1${SLAPD_PPOLICY_DN_PREFIX}$dc_string/g" $file
                 fi
 
+                #cat "$file"
+
                 slapmodify -n0 -F /etc/ldap/slapd.d -l "$file"
             done
         done
@@ -109,4 +112,4 @@ fi
 
 chown -R openldap:openldap /etc/ldap/slapd.d/ /var/lib/ldap/ /var/run/slapd/
 
-exec "$@"
+exec slapd -h "ldap:/// ldapi:///" -d 32768 -u openldap -g openldap #-d Any

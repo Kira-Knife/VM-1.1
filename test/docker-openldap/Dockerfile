@@ -17,5 +17,3 @@ COPY entrypoint.sh /entrypoint.sh
 EXPOSE 389
 
 ENTRYPOINT ["/entrypoint.sh"]
-
-CMD ["slapd", "-d", "32768", "-u", "openldap", "-g", "openldap"]
