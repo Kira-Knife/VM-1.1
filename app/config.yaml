@@ -1,0 +1,10 @@
+ydb:
+  connection_string: "grpc://localhost:2135/local"
+  pool_size: 10
+
+alert_statuses:
+  statuses:
+    - "Создано"
+    - "В работе"
+    - "Решено"
+    - "Отклонено"
