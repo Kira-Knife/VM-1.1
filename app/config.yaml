@@ -1,6 +1,11 @@
+
 ydb:
+  # endpoint: "grpc://ydb.server.local:2135"
   connection_string: "grpc://localhost:2135/local"
-  pool_size: 10
+  database: "/alert-db"
+  # cert_path: "..."
+  pool_size: 20
+  timeout: 10
 
 alert_statuses:
   statuses:
