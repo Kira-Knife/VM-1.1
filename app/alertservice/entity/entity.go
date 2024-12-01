@@ -2,7 +2,15 @@ package entity
 
 import "time"
 
-// Alert represents the alerts table with its fields.
+type VMAlert struct {
+	Labels       map[string]string `json:"labels"`
+	Annotations  map[string]string `json:"annotations"`
+	StartsAt     time.Time         `json:"startsAt"`
+	EndsAt       time.Time         `json:"endsAt"`
+	GeneratorURL string            `json:"generatorURL"`
+	Fingerprint  string            `json:"fingerprint"`
+}
+
 type Alert struct {
 	AlertID      int       `json:"alert_id"`
 	AlertName    string    `json:"alert_name"`
@@ -13,7 +21,6 @@ type Alert struct {
 	Status       string    `json:"status,omitempty"`
 }
 
-// Incident represents the incidents table with its fields.
 type Incident struct {
 	IncidentID   int       `json:"incident_id"`
 	AlertID      int       `json:"alert_id,omitempty"`
@@ -24,7 +31,6 @@ type Incident struct {
 	GeneratorURL string    `json:"generator_url,omitempty"`
 }
 
-// Notification represents the notifications table with its fields.
 type Notification struct {
 	ID        int    `json:"id"`
 	Recipient string `json:"recipient"`

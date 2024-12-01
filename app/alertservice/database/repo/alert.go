@@ -59,20 +59,24 @@ func (r *TranslationRepo) GetAlert(ctx context.Context, alertID int) (entity.Ale
 	return alert, nil
 }
 
-func (r *TranslationRepo) StoreAlert(ctx context.Context, alert entity.Alert) error {
+func (r *TranslationRepo) StoreAlert(ctx context.Context, alert entity.Alert) (int, error) {
+	var alertID int
+
 	sql, args, err := r.Builder.
 		Insert("alerts").
 		Columns("alert_name, severity, description, timestamp, generator_url, status").
 		Values(alert.AlertName, alert.Severity, alert.Description, alert.Timestamp, alert.GeneratorURL, alert.Status).
+		Suffix("RETURNING alert_id"). // Добавляем RETURNING для получения alert_id
 		ToSql()
 	if err != nil {
-		return fmt.Errorf("AlertRepo - StoreAlert - r.Builder: %w", err)
+		return 0, fmt.Errorf("AlertRepo - StoreAlert - r.Builder: %w", err)
 	}
 
-	_, err = r.Pool.Exec(ctx, sql, args...)
+	// Выполняем запрос и получаем alert_id
+	err = r.Pool.QueryRow(ctx, sql, args...).Scan(&alertID)
 	if err != nil {
-		return fmt.Errorf("AlertRepo - StoreAlert - r.Pool.Exec: %w", err)
+		return 0, fmt.Errorf("AlertRepo - StoreAlert - r.Pool.QueryRow: %w", err)
 	}
 
-	return nil
+	return alertID, nil
 }

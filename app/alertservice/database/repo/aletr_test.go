@@ -50,7 +50,7 @@ func TestStoreAlert(t *testing.T) {
 		Status:       "active",
 	}
 
-	err := testRepo.StoreAlert(context.Background(), alert)
+	_, err := testRepo.StoreAlert(context.Background(), alert)
 	assert.NoError(t, err)
 
 	alerts, err := testRepo.GetAlerts(context.Background())
@@ -72,7 +72,7 @@ func TestGetAlert(t *testing.T) {
 		Status:       "active",
 	}
 
-	err := testRepo.StoreAlert(context.Background(), alert)
+	_, err := testRepo.StoreAlert(context.Background(), alert)
 	assert.NoError(t, err)
 
 	fetchedAlert, err := testRepo.GetAlert(context.Background(), alert.AlertID)
@@ -102,10 +102,10 @@ func TestGetAlerts(t *testing.T) {
 		Status:       "active",
 	}
 
-	err := testRepo.StoreAlert(context.Background(), alert1)
+	_, err := testRepo.StoreAlert(context.Background(), alert1)
 	assert.NoError(t, err)
 
-	err = testRepo.StoreAlert(context.Background(), alert2)
+	_, err = testRepo.StoreAlert(context.Background(), alert2)
 	assert.NoError(t, err)
 
 	alerts, err := testRepo.GetAlerts(context.Background())

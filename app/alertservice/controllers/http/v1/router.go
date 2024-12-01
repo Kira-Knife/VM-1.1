@@ -1,33 +1,30 @@
 package v1
 
 import (
-	"alertservice/entity"
-	"context"
-	"encoding/json"
 	"log"
 	"net/http"
 )
 
-func (s *Server) alertHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
-		return
-	}
+func (s *Server) routeRegistration() {
 
-	var alerts []entity.Alert
-	if err := json.NewDecoder(r.Body).Decode(&alerts); err != nil {
-		http.Error(w, "Failed to decode alert", http.StatusBadRequest)
-		return
-	}
+	// AlertFrontendApi
+	s.router.HandleFunc("/alerts", s.handlerPass).Methods(http.MethodGet)
+	s.router.HandleFunc("/incidents", s.handlerPass).Methods(http.MethodGet)
+	s.router.HandleFunc("/alerts/{alert_id:[0-9]+}", s.handlerPass).Methods(http.MethodGet)
+	s.router.HandleFunc("/incidents/{incidents_id:[0-9]+}", s.handlerPass).Methods(http.MethodGet)
 
-	ctx := context.Background()
-	for _, alert := range alerts {
-		if err := s.u.StoreAlert(ctx, alert); err != nil {
-			log.Printf("Failed to store alert: %v", err)
-			http.Error(w, "Failed to store alert", http.StatusInternalServerError)
-			return
-		}
-	}
+	s.router.HandleFunc("/settings/interval", s.handlerPass).Methods(http.MethodGet)
+	s.router.HandleFunc("/settings/interval", s.handlerPass).Methods(http.MethodPost)
+}
 
-	w.WriteHeader(http.StatusAccepted)
+func (s *Server) handlerPass(w http.ResponseWriter, r *http.Request) {
+	// Устанавливаем код состояния 503
+	w.WriteHeader(http.StatusServiceUnavailable)
+
+	// Возвращаем сообщение о том, что функция в разработке
+	_, err := w.Write([]byte("Этот функционал находится в разработке. Пожалуйста, попробуйте позже."))
+	if err != nil {
+		// Логируем ошибку, если не удалось записать ответ
+		log.Printf("Failed to write response: %v", err)
+	}
 }

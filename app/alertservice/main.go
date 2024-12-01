@@ -2,11 +2,16 @@ package main
 
 import (
 	"alertservice/config"
+	v1 "alertservice/controllers/http/v1"
 	"alertservice/database/repo"
 	"alertservice/entity"
 	"alertservice/pkg/postgres"
+	"alertservice/usecase"
 	"context"
 	"fmt"
+	"log"
+	"os"
+	"os/signal"
 	"time"
 )
 
@@ -24,7 +29,31 @@ func main() {
 	}
 	defer pg.Close()
 
-	tr := repo.New(pg)
+	db := repo.New(pg)
+	u := usecase.New(cfg, db)
+	server := v1.New(cfg, u)
+
+	go func() {
+		if err := server.Run(); err != nil {
+			log.Fatalf("Failed to run server: %v", err)
+		}
+	}()
+
+	// Создаем канал для получения сигналов
+	signalChan := make(chan os.Signal, 1)
+	signal.Notify(signalChan, os.Interrupt) // Подписываемся на сигнал прерывания (Ctrl+C)
+
+	// Ожидаем сигнала
+	<-signalChan
+	log.Println("Received shutdown signal, stopping server...")
+
+	// Останавливаем сервер
+	if err := server.Stop(context.Background()); err != nil {
+		log.Fatalf("Server forced to shutdown: %v", err)
+	}
+
+	log.Println("Server stopped gracefully")
+
 	alert := entity.Alert{
 		AlertID:      1,
 		AlertName:    "High CPU Usage",
@@ -35,12 +64,13 @@ func main() {
 		Status:       "active",
 	}
 	ctx := context.Background()
-	err = tr.StoreAlert(ctx, alert)
+	alertId, err := db.StoreAlert(ctx, alert)
 	if err != nil {
 		fmt.Println(err)
 	}
+	fmt.Printf("AlertId: %v.\n", alertId)
 	ctx = context.Background()
-	alerts, err := tr.GetAlerts(ctx)
+	alerts, err := db.GetAlerts(ctx)
 	if err != nil {
 		fmt.Println(err)
 	}
