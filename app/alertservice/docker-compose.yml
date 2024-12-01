@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:latest
+    container_name: vmalertservice-db
+    environment:
+      POSTGRES_DB: vmalertservice
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+      - ./database/repo/sql/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+volumes:
+  db_data:
