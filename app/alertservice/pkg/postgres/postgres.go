@@ -14,7 +14,7 @@ import (
 const (
 	_defaultMaxPoolSize  = 1
 	_defaultConnAttempts = 10
-	_defaultConnTimeout  = 10 * time.Second
+	_defaultConnTimeout  = time.Second
 )
 
 // Postgres -.
