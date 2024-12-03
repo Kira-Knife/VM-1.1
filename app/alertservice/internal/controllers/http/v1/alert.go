@@ -51,7 +51,6 @@ func (s *Server) getAlerts(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusAccepted)
 		json.NewEncoder(w).Encode(alerts)
 	}
-
 }
 
 // @Summary Get alert by ID
@@ -60,7 +59,7 @@ func (s *Server) getAlerts(w http.ResponseWriter, r *http.Request) {
 // @Produce json
 // @Param alert_id path int true "Alert ID"
 // @Success 200 {object} entity.Alert
-// @Router /api/v1/alerts/{alert_id:int64} [get]
+// @Router /api/v1/alerts/{alert_id} [get]
 func (s *Server) getAlertByID(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	alertIDStr := vars["alert_id"]                       // Получаем alert_id из параметров

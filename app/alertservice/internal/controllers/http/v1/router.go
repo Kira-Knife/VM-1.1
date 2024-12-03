@@ -20,9 +20,9 @@ func (s *Server) routeRegistration() {
 	apiRouter.HandleFunc("/alerts", s.getAlerts).Methods(http.MethodGet)                      // -
 	apiRouter.HandleFunc("/alerts/{alert_id:[0-9]+}", s.getAlertByID).Methods(http.MethodGet) // -
 
-	apiRouter.HandleFunc("/incidents", s.handlerPass).Methods(http.MethodGet)                         // -
-	apiRouter.HandleFunc("/incidents/{incidents_id:[0-9]+}", s.handlerPass).Methods(http.MethodGet)   // -
-	apiRouter.HandleFunc("/incidents/{incidents_id:[0-9]+}", s.handlerPass).Methods(http.MethodPatch) // -
+	apiRouter.HandleFunc("/incidents", s.getIncidents).Methods(http.MethodGet)                                 // -
+	apiRouter.HandleFunc("/incidents/{incidents_id:[0-9]+}", s.getIncidentByID).Methods(http.MethodGet)        // -
+	apiRouter.HandleFunc("/incidents/{incidents_id:[0-9]+}", s.updateIncidentStatus).Methods(http.MethodPatch) // -
 
 	apiRouter.HandleFunc("/settings/interval", s.handlerPass).Methods(http.MethodGet)  // -
 	apiRouter.HandleFunc("/settings/interval", s.handlerPass).Methods(http.MethodPost) // -

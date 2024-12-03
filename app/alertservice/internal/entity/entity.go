@@ -49,7 +49,7 @@ type Alert struct {
 }
 
 type Incident struct {
-	IncidentID   int       `json:"incident_id"`
+	IncidentID   int64     `json:"incident_id"`
 	AlertID      int64     `json:"alert_id,omitempty"`
 	Severity     string    `json:"severity"`
 	Description  string    `json:"description,omitempty"`

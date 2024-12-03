@@ -109,6 +109,11 @@ definitions:
       version:
         type: string
     type: object
+  v1.Status:
+    properties:
+      status:
+        type: string
+    type: object
 host: 127.0.0.1:8787
 info:
   contact: {}
@@ -153,7 +158,7 @@ paths:
       summary: принимает алерты от VM
       tags:
       - alerts
-  /api/v1/alerts/{alert_id:int64}:
+  /api/v1/alerts/{alert_id}:
     get:
       description: Retrieve an alert by its ID
       parameters:
@@ -187,13 +192,13 @@ paths:
       summary: Get all incidents
       tags:
       - incidents
-  /api/v1/incidents/{incidents_id}:
+  /api/v1/incidents/{incident_id}:
     get:
       description: Retrieve an incident by its ID
       parameters:
       - description: Incident ID
         in: path
-        name: incidents_id
+        name: incident_id
         required: true
         type: integer
       produces:
@@ -211,9 +216,15 @@ paths:
       parameters:
       - description: Incident ID
         in: path
-        name: incidents_id
+        name: incident_id
         required: true
         type: integer
+      - description: New status
+        in: body
+        name: incident_status
+        required: true
+        schema:
+          $ref: '#/definitions/v1.Status'
       responses:
         "204":
           description: No Content

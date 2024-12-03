@@ -59,7 +59,7 @@ func (r *PostgresRepo) StoreIncident(ctx context.Context, incident entity.Incide
 }
 
 // GetIncident retrieves a single incident by its ID.
-func (r *PostgresRepo) GetIncident(ctx context.Context, incidentID int) (entity.Incident, error) {
+func (r *PostgresRepo) GetIncident(ctx context.Context, incidentID int64) (entity.Incident, error) {
 	sql, args, err := r.db.Builder.
 		Select("incident_id, alert_id, severity, description, status, create_at, generator_url").
 		From("incidents").
@@ -87,7 +87,7 @@ func (r *PostgresRepo) GetIncident(ctx context.Context, incidentID int) (entity.
 }
 
 // UpdateIncidentStatus updates the status of an incident.
-func (r *PostgresRepo) UpdateIncidentStatus(ctx context.Context, incidentID int, newStatus string) error {
+func (r *PostgresRepo) UpdateIncidentStatus(ctx context.Context, incidentID int64, newStatus string) error {
 	sql, args, err := r.db.Builder.
 		Update("incidents").
 		Set("status", newStatus).

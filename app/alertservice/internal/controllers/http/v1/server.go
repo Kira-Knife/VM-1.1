@@ -37,6 +37,7 @@ func New(cfg *config.Config, u *usecase.UseCase, l *logger.Logger) *Server {
 }
 
 func (s *Server) Run() error {
+	s.logger.Info("Сервер запущен : %s", s.url)
 	return s.httpServer.ListenAndServe()
 }
 

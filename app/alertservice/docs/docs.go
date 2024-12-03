@@ -71,7 +71,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/alerts/{alert_id:int64}": {
+        "/api/v1/alerts/{alert_id}": {
             "get": {
                 "description": "Retrieve an alert by its ID",
                 "produces": [
@@ -123,7 +123,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/incidents/{incidents_id}": {
+        "/api/v1/incidents/{incident_id}": {
             "get": {
                 "description": "Retrieve an incident by its ID",
                 "produces": [
@@ -137,7 +137,7 @@ const docTemplate = `{
                     {
                         "type": "integer",
                         "description": "Incident ID",
-                        "name": "incidents_id",
+                        "name": "incident_id",
                         "in": "path",
                         "required": true
                     }
@@ -161,9 +161,18 @@ const docTemplate = `{
                     {
                         "type": "integer",
                         "description": "Incident ID",
-                        "name": "incidents_id",
+                        "name": "incident_id",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "description": "New status",
+                        "name": "incident_status",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/v1.Status"
+                        }
                     }
                 ],
                 "responses": {
@@ -385,6 +394,14 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "version": {
+                    "type": "string"
+                }
+            }
+        },
+        "v1.Status": {
+            "type": "object",
+            "properties": {
+                "status": {
                     "type": "string"
                 }
             }
