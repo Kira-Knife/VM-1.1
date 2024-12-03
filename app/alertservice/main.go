@@ -2,18 +2,27 @@ package main
 
 import (
 	"alertservice/config"
-	v1 "alertservice/controllers/http/v1"
-	"alertservice/database/repo"
-	"alertservice/entity"
+	v1 "alertservice/internal/controllers/http/v1"
+	"alertservice/internal/database/repo"
+	"alertservice/internal/usecase"
+	"alertservice/pkg/logger"
 	"alertservice/pkg/postgres"
-	"alertservice/usecase"
 	"context"
 	"fmt"
 	"log"
 	"os"
 	"os/signal"
-	"time"
+
+	_ "alertservice/docs"
 )
+
+// @title           AlertService
+// @version         1.0
+// @description     AlertService
+// @termsOfService  http://swagger.io/terms/
+
+// @host      127.0.0.1:8787
+// @BasePath  /
 
 func main() {
 	cfg, err := config.NewConfig()
@@ -29,9 +38,10 @@ func main() {
 	}
 	defer pg.Close()
 
-	db := repo.New(pg)
-	u := usecase.New(cfg, db)
-	server := v1.New(cfg, u)
+	l := logger.New(cfg.Log.Level)
+	db := repo.New(pg, l)
+	u := usecase.New(cfg, db, l)
+	server := v1.New(cfg, u, l)
 
 	go func() {
 		if err := server.Run(); err != nil {
@@ -53,26 +63,4 @@ func main() {
 	}
 
 	log.Println("Server stopped gracefully")
-
-	alert := entity.Alert{
-		AlertID:      1,
-		AlertName:    "High CPU Usage",
-		Severity:     "High",
-		Description:  "The CPU usage has exceeded 90% for the last 5 minutes.",
-		Timestamp:    time.Now(),
-		GeneratorURL: "http://monitoring.example.com",
-		Status:       "active",
-	}
-	ctx := context.Background()
-	alertId, err := db.StoreAlert(ctx, alert)
-	if err != nil {
-		fmt.Println(err)
-	}
-	fmt.Printf("AlertId: %v.\n", alertId)
-	ctx = context.Background()
-	alerts, err := db.GetAlerts(ctx)
-	if err != nil {
-		fmt.Println(err)
-	}
-	fmt.Println(alerts)
 }

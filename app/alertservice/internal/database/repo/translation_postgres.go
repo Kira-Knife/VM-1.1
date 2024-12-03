@@ -1,6 +1,7 @@
 package repo
 
 import (
+	"alertservice/pkg/logger"
 	"alertservice/pkg/postgres"
 	"context"
 	"log"
@@ -10,12 +11,16 @@ const _defaultEntityCap = 64
 
 // TranslationRepo -.
 type TranslationRepo struct {
-	*postgres.Postgres
+	db     *postgres.Postgres
+	logger *logger.Logger
 }
 
 // New -.
-func New(pg *postgres.Postgres) *TranslationRepo {
-	return &TranslationRepo{pg}
+func New(pg *postgres.Postgres, l *logger.Logger) *TranslationRepo {
+	return &TranslationRepo{
+		db:     pg,
+		logger: l,
+	}
 }
 
 func (r *TranslationRepo) AutoMigrate() {
@@ -49,7 +54,7 @@ func (r *TranslationRepo) AutoMigrate() {
 	}
 
 	for _, query := range queries {
-		_, err := r.Pool.Exec(context.Background(), query)
+		_, err := r.db.Pool.Exec(context.Background(), query)
 		if err != nil {
 			log.Fatalf("TranslationRepo - AutoMigrate - Exec: %v", err)
 		}

@@ -4,11 +4,11 @@ import (
 	"context"
 	"fmt"
 
-	"alertservice/entity"
+	"alertservice/internal/entity"
 )
 
 func (r *TranslationRepo) GetNotifications(ctx context.Context) ([]entity.Notification, error) {
-	sql, _, err := r.Builder.
+	sql, _, err := r.db.Builder.
 		Select("recipient, message").
 		From("notifications").
 		ToSql()
@@ -16,7 +16,7 @@ func (r *TranslationRepo) GetNotifications(ctx context.Context) ([]entity.Notifi
 		return nil, fmt.Errorf("NotificationRepo - GetNotifications - r.Builder: %w", err)
 	}
 
-	rows, err := r.Pool.Query(ctx, sql)
+	rows, err := r.db.Pool.Query(ctx, sql)
 	if err != nil {
 		return nil, fmt.Errorf("NotificationRepo - GetNotifications - r.Pool.Query: %w", err)
 	}
@@ -37,7 +37,7 @@ func (r *TranslationRepo) GetNotifications(ctx context.Context) ([]entity.Notifi
 }
 
 func (r *TranslationRepo) StoreNotification(ctx context.Context, notification entity.Notification) error {
-	sql, args, err := r.Builder.
+	sql, args, err := r.db.Builder.
 		Insert("notifications").
 		Columns("recipient, message").
 		Values(notification.Recipient, notification.Message).
@@ -46,7 +46,7 @@ func (r *TranslationRepo) StoreNotification(ctx context.Context, notification en
 		return fmt.Errorf("NotificationRepo - StoreNotification - r.Builder: %w", err)
 	}
 
-	_, err = r.Pool.Exec(ctx, sql, args...)
+	_, err = r.db.Pool.Exec(ctx, sql, args...)
 	if err != nil {
 		return fmt.Errorf("NotificationRepo - StoreNotification - r.Pool.Exec: %w", err)
 	}

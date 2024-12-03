@@ -4,13 +4,13 @@ import (
 	"context"
 	"fmt"
 
-	"alertservice/entity"
+	"alertservice/internal/entity"
 
 	"github.com/Masterminds/squirrel"
 )
 
 func (r *TranslationRepo) GetAlerts(ctx context.Context) ([]entity.Alert, error) {
-	sql, args, err := r.Builder.
+	sql, args, err := r.db.Builder.
 		Select("alert_id, alert_name, severity, description, timestamp, generator_url, status").
 		From("alerts").
 		ToSql()
@@ -18,7 +18,7 @@ func (r *TranslationRepo) GetAlerts(ctx context.Context) ([]entity.Alert, error)
 		return nil, fmt.Errorf("AlertRepo - GetAlerts - r.Builder: %w", err)
 	}
 
-	rows, err := r.Pool.Query(ctx, sql, args...)
+	rows, err := r.db.Pool.Query(ctx, sql, args...)
 	if err != nil {
 		return nil, fmt.Errorf("AlertRepo - GetAlerts - r.Pool.Query: %w", err)
 	}
@@ -39,7 +39,7 @@ func (r *TranslationRepo) GetAlerts(ctx context.Context) ([]entity.Alert, error)
 }
 
 func (r *TranslationRepo) GetAlert(ctx context.Context, alertID int) (entity.Alert, error) {
-	sql, args, err := r.Builder.
+	sql, args, err := r.db.Builder.
 		Select("alert_id, alert_name, severity, description, timestamp, generator_url, status").
 		From("alerts").
 		Where(squirrel.Eq{"alert_id": alertID}).
@@ -48,7 +48,7 @@ func (r *TranslationRepo) GetAlert(ctx context.Context, alertID int) (entity.Ale
 		return entity.Alert{}, fmt.Errorf("AlertRepo - GetAlert - r.Builder: %w", err)
 	}
 
-	row := r.Pool.QueryRow(ctx, sql, args...)
+	row := r.db.Pool.QueryRow(ctx, sql, args...)
 
 	var alert entity.Alert
 	err = row.Scan(&alert.AlertID, &alert.AlertName, &alert.Severity, &alert.Description, &alert.Timestamp, &alert.GeneratorURL, &alert.Status)
@@ -62,7 +62,7 @@ func (r *TranslationRepo) GetAlert(ctx context.Context, alertID int) (entity.Ale
 func (r *TranslationRepo) StoreAlert(ctx context.Context, alert entity.Alert) (int, error) {
 	var alertID int
 
-	sql, args, err := r.Builder.
+	sql, args, err := r.db.Builder.
 		Insert("alerts").
 		Columns("alert_name, severity, description, timestamp, generator_url, status").
 		Values(alert.AlertName, alert.Severity, alert.Description, alert.Timestamp, alert.GeneratorURL, alert.Status).
@@ -73,7 +73,7 @@ func (r *TranslationRepo) StoreAlert(ctx context.Context, alert entity.Alert) (i
 	}
 
 	// Выполняем запрос и получаем alert_id
-	err = r.Pool.QueryRow(ctx, sql, args...).Scan(&alertID)
+	err = r.db.Pool.QueryRow(ctx, sql, args...).Scan(&alertID)
 	if err != nil {
 		return 0, fmt.Errorf("AlertRepo - StoreAlert - r.Pool.QueryRow: %w", err)
 	}

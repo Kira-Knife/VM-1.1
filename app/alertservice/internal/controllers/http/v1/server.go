@@ -2,7 +2,8 @@ package v1
 
 import (
 	"alertservice/config"
-	"alertservice/usecase"
+	"alertservice/internal/usecase"
+	"alertservice/pkg/logger"
 	"context"
 	"net/http"
 	"time"
@@ -15,9 +16,10 @@ type Server struct {
 	u          *usecase.UseCase
 	router     *mux.Router
 	httpServer *http.Server
+	logger     *logger.Logger
 }
 
-func New(cfg *config.Config, u *usecase.UseCase) *Server {
+func New(cfg *config.Config, u *usecase.UseCase, l *logger.Logger) *Server {
 	router := mux.NewRouter()
 
 	s := Server{
@@ -28,6 +30,7 @@ func New(cfg *config.Config, u *usecase.UseCase) *Server {
 			Addr:    ":" + cfg.HTTP.Port,
 			Handler: router,
 		},
+		logger: l,
 	}
 	s.routeRegistration()
 	return &s

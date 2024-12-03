@@ -5,7 +5,8 @@ import (
 	"testing"
 	"time"
 
-	"alertservice/entity"
+	"alertservice/internal/entity"
+	"alertservice/pkg/logger"
 	"alertservice/pkg/postgres"
 
 	"github.com/jackc/pgx/v4/pgxpool"
@@ -23,7 +24,7 @@ func setup() {
 	}
 
 	// Инициализация репозитория
-	testRepo = New(&postgres.Postgres{Pool: testPool})
+	testRepo = New(&postgres.Postgres{Pool: testPool}, logger.New("debug"))
 
 	// Автоматическая миграция для создания таблиц
 	testRepo.AutoMigrate()

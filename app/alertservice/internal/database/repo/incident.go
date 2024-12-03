@@ -4,14 +4,14 @@ import (
 	"context"
 	"fmt"
 
-	"alertservice/entity"
+	"alertservice/internal/entity"
 
 	"github.com/Masterminds/squirrel"
 )
 
 // GetIncidents retrieves all incidents from the database.
 func (r *TranslationRepo) GetIncidents(ctx context.Context) ([]entity.Incident, error) {
-	sql, args, err := r.Builder.
+	sql, args, err := r.db.Builder.
 		Select("incident_id, alert_id, severity, description, status, timestamp, generator_url").
 		From("incidents").
 		ToSql()
@@ -19,7 +19,7 @@ func (r *TranslationRepo) GetIncidents(ctx context.Context) ([]entity.Incident, 
 		return nil, fmt.Errorf("IncidentRepo - GetIncidents - r.Builder: %w", err)
 	}
 
-	rows, err := r.Pool.Query(ctx, sql, args...)
+	rows, err := r.db.Pool.Query(ctx, sql, args...)
 	if err != nil {
 		return nil, fmt.Errorf("IncidentRepo - GetIncidents - r.Pool.Query: %w", err)
 	}
@@ -41,7 +41,7 @@ func (r *TranslationRepo) GetIncidents(ctx context.Context) ([]entity.Incident, 
 
 // StoreIncident inserts a new incident into the database.
 func (r *TranslationRepo) StoreIncident(ctx context.Context, incident entity.Incident) error {
-	sql, args, err := r.Builder.
+	sql, args, err := r.db.Builder.
 		Insert("incidents").
 		Columns("alert_id, severity, description, status, timestamp, generator_url").
 		Values(incident.AlertID, incident.Severity, incident.Description, incident.Status, incident.Timestamp, incident.GeneratorURL).
@@ -50,7 +50,7 @@ func (r *TranslationRepo) StoreIncident(ctx context.Context, incident entity.Inc
 		return fmt.Errorf("IncidentRepo - StoreIncident - r.Builder: %w", err)
 	}
 
-	_, err = r.Pool.Exec(ctx, sql, args...)
+	_, err = r.db.Pool.Exec(ctx, sql, args...)
 	if err != nil {
 		return fmt.Errorf("IncidentRepo - StoreIncident - r.Pool.Exec: %w", err)
 	}
@@ -60,7 +60,7 @@ func (r *TranslationRepo) StoreIncident(ctx context.Context, incident entity.Inc
 
 // GetIncident retrieves a single incident by its ID.
 func (r *TranslationRepo) GetIncident(ctx context.Context, incidentID int) (entity.Incident, error) {
-	sql, args, err := r.Builder.
+	sql, args, err := r.db.Builder.
 		Select("incident_id, alert_id, severity, description, status, timestamp, generator_url").
 		From("incidents").
 		Where(squirrel.Eq{"incident_id": incidentID}).
@@ -70,7 +70,7 @@ func (r *TranslationRepo) GetIncident(ctx context.Context, incidentID int) (enti
 	}
 
 	var incident entity.Incident
-	err = r.Pool.QueryRow(ctx, sql, args...).Scan(
+	err = r.db.Pool.QueryRow(ctx, sql, args...).Scan(
 		&incident.IncidentID,
 		&incident.AlertID,
 		&incident.Severity,
@@ -88,7 +88,7 @@ func (r *TranslationRepo) GetIncident(ctx context.Context, incidentID int) (enti
 
 // UpdateIncidentStatus updates the status of an incident.
 func (r *TranslationRepo) UpdateIncidentStatus(ctx context.Context, incidentID int, newStatus string) error {
-	sql, args, err := r.Builder.
+	sql, args, err := r.db.Builder.
 		Update("incidents").
 		Set("status", newStatus).
 		Where(squirrel.Eq{"incident_id": incidentID}).
@@ -97,7 +97,7 @@ func (r *TranslationRepo) UpdateIncidentStatus(ctx context.Context, incidentID i
 		return fmt.Errorf("IncidentRepo - UpdateIncidentStatus - r.Builder: %w", err)
 	}
 
-	_, err = r.Pool.Exec(ctx, sql, args...)
+	_, err = r.db.Pool.Exec(ctx, sql, args...)
 	if err != nil {
 		return fmt.Errorf("IncidentRepo - UpdateIncidentStatus - r.Pool.Exec: %w", err)
 	}
