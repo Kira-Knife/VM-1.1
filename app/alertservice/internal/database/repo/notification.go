@@ -7,7 +7,7 @@ import (
 	"alertservice/internal/entity"
 )
 
-func (r *TranslationRepo) GetNotifications(ctx context.Context) ([]entity.Notification, error) {
+func (r *PostgresRepo) GetNotifications(ctx context.Context) ([]entity.Notification, error) {
 	sql, _, err := r.db.Builder.
 		Select("recipient, message").
 		From("notifications").
@@ -36,7 +36,7 @@ func (r *TranslationRepo) GetNotifications(ctx context.Context) ([]entity.Notifi
 	return notifications, nil
 }
 
-func (r *TranslationRepo) StoreNotification(ctx context.Context, notification entity.Notification) error {
+func (r *PostgresRepo) StoreNotification(ctx context.Context, notification entity.Notification) error {
 	sql, args, err := r.db.Builder.
 		Insert("notifications").
 		Columns("recipient, message").

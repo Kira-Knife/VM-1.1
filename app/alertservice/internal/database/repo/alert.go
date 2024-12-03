@@ -9,9 +9,10 @@ import (
 	"github.com/Masterminds/squirrel"
 )
 
-func (r *TranslationRepo) GetAlerts(ctx context.Context) ([]entity.Alert, error) {
+// GetAlerts - получение всех алертов
+func (r *PostgresRepo) GetAlerts(ctx context.Context) ([]entity.Alert, error) {
 	sql, args, err := r.db.Builder.
-		Select("alert_id, alert_name, severity, description, timestamp, generator_url, status").
+		Select("alert_id, alert_name, severity, description, create_at, generator_url, status, starts_at, ends_at").
 		From("alerts").
 		ToSql()
 	if err != nil {
@@ -28,7 +29,17 @@ func (r *TranslationRepo) GetAlerts(ctx context.Context) ([]entity.Alert, error)
 
 	for rows.Next() {
 		var alert entity.Alert
-		err = rows.Scan(&alert.AlertID, &alert.AlertName, &alert.Severity, &alert.Description, &alert.Timestamp, &alert.GeneratorURL, &alert.Status)
+		err = rows.Scan(
+			&alert.AlertID,
+			&alert.AlertName,
+			&alert.Severity,
+			&alert.Description,
+			&alert.CreateAt,
+			&alert.GeneratorURL,
+			&alert.Status,
+			&alert.StartsAt,
+			&alert.EndsAt,
+		)
 		if err != nil {
 			return nil, fmt.Errorf("AlertRepo - GetAlerts - rows.Scan: %w", err)
 		}
@@ -38,9 +49,10 @@ func (r *TranslationRepo) GetAlerts(ctx context.Context) ([]entity.Alert, error)
 	return alerts, nil
 }
 
-func (r *TranslationRepo) GetAlert(ctx context.Context, alertID int) (entity.Alert, error) {
+// GetAlert - получение алерта по alertID
+func (r *PostgresRepo) GetAlert(ctx context.Context, alertID int64) (entity.Alert, error) {
 	sql, args, err := r.db.Builder.
-		Select("alert_id, alert_name, severity, description, timestamp, generator_url, status").
+		Select("alert_id, alert_name, severity, description, create_at, generator_url, status, starts_at, ends_at").
 		From("alerts").
 		Where(squirrel.Eq{"alert_id": alertID}).
 		ToSql()
@@ -51,7 +63,17 @@ func (r *TranslationRepo) GetAlert(ctx context.Context, alertID int) (entity.Ale
 	row := r.db.Pool.QueryRow(ctx, sql, args...)
 
 	var alert entity.Alert
-	err = row.Scan(&alert.AlertID, &alert.AlertName, &alert.Severity, &alert.Description, &alert.Timestamp, &alert.GeneratorURL, &alert.Status)
+	err = row.Scan(
+		&alert.AlertID,
+		&alert.AlertName,
+		&alert.Severity,
+		&alert.Description,
+		&alert.CreateAt,
+		&alert.GeneratorURL,
+		&alert.Status,
+		&alert.StartsAt,
+		&alert.EndsAt,
+	)
 	if err != nil {
 		return entity.Alert{}, fmt.Errorf("AlertRepo - GetAlert - row.Scan: %w", err)
 	}
@@ -59,13 +81,23 @@ func (r *TranslationRepo) GetAlert(ctx context.Context, alertID int) (entity.Ale
 	return alert, nil
 }
 
-func (r *TranslationRepo) StoreAlert(ctx context.Context, alert entity.Alert) (int, error) {
-	var alertID int
+// StoreAlert - запись алерта в таблицу alerts
+func (r *PostgresRepo) StoreAlert(ctx context.Context, alert entity.Alert) (int64, error) {
+	var alertID int64
 
 	sql, args, err := r.db.Builder.
 		Insert("alerts").
-		Columns("alert_name, severity, description, timestamp, generator_url, status").
-		Values(alert.AlertName, alert.Severity, alert.Description, alert.Timestamp, alert.GeneratorURL, alert.Status).
+		Columns("alert_name, severity, description, create_at, generator_url, status, starts_at, ends_at").
+		Values(
+			alert.AlertName,
+			alert.Severity,
+			alert.Description,
+			alert.CreateAt,
+			alert.GeneratorURL,
+			alert.Status,
+			alert.StartsAt,
+			alert.EndsAt,
+		).
 		Suffix("RETURNING alert_id"). // Добавляем RETURNING для получения alert_id
 		ToSql()
 	if err != nil {
@@ -79,4 +111,22 @@ func (r *TranslationRepo) StoreAlert(ctx context.Context, alert entity.Alert) (i
 	}
 
 	return alertID, nil
+}
+
+// DeleteAlert - удаление алерта по alertID
+func (r *PostgresRepo) DeleteAlert(ctx context.Context, alertID int64) error {
+	sql, args, err := r.db.Builder.
+		Delete("alerts").
+		Where(squirrel.Eq{"alert_id": alertID}).
+		ToSql()
+	if err != nil {
+		return fmt.Errorf("AlertRepo - DeleteAlert - r.Builder: %w", err)
+	}
+
+	_, err = r.db.Pool.Exec(ctx, sql, args...)
+	if err != nil {
+		return fmt.Errorf("AlertRepo - DeleteAlert - r.Pool.Exec: %w", err)
+	}
+
+	return nil
 }

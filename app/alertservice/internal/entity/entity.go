@@ -37,25 +37,24 @@ type VMAlertNotification struct {
 }
 
 type Alert struct {
-	AlertID      int       `json:"alert_id"`
+	AlertID      int64     `json:"alert_id"`
 	AlertName    string    `json:"alert_name"`
 	Severity     string    `json:"severity"`
 	Description  string    `json:"description,omitempty"`
-	Timestamp    time.Time `json:"timestamp"`
+	CreateAt     time.Time `json:"timestamp"`
 	GeneratorURL string    `json:"generator_url,omitempty"`
 	Status       string    `json:"status,omitempty"`
-
-	StartsAt time.Time `json:"startsAt"`
-	EndsAt   time.Time `json:"endsAt"`
+	StartsAt     time.Time `json:"startsAt"`
+	EndsAt       time.Time `json:"endsAt"`
 }
 
 type Incident struct {
 	IncidentID   int       `json:"incident_id"`
-	AlertID      int       `json:"alert_id,omitempty"` //
+	AlertID      int64     `json:"alert_id,omitempty"`
 	Severity     string    `json:"severity"`
 	Description  string    `json:"description,omitempty"`
 	Status       string    `json:"status,omitempty"`
-	Timestamp    time.Time `json:"timestamp"`
+	CreateAt     time.Time `json:"timestamp"`
 	GeneratorURL string    `json:"generator_url,omitempty"`
 }
 

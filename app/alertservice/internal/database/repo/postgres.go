@@ -10,20 +10,20 @@ import (
 const _defaultEntityCap = 64
 
 // TranslationRepo -.
-type TranslationRepo struct {
+type PostgresRepo struct {
 	db     *postgres.Postgres
 	logger *logger.Logger
 }
 
 // New -.
-func New(pg *postgres.Postgres, l *logger.Logger) *TranslationRepo {
-	return &TranslationRepo{
+func New(pg *postgres.Postgres, l *logger.Logger) *PostgresRepo {
+	return &PostgresRepo{
 		db:     pg,
 		logger: l,
 	}
 }
 
-func (r *TranslationRepo) AutoMigrate() {
+func (r *PostgresRepo) AutoMigrate() {
 	queries := []string{
 		`CREATE TABLE IF NOT EXISTS alerts (
 			alert_id SERIAL PRIMARY KEY,

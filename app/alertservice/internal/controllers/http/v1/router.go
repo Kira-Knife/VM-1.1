@@ -17,8 +17,8 @@ func (s *Server) routeRegistration() {
 	apiRouter.HandleFunc("/alerts", s.incomingAlerts).Methods(http.MethodPost) // входящие алерты
 
 	// AlertFrontendApi
-	apiRouter.HandleFunc("/alerts", s.handlerPass).Methods(http.MethodGet)                   // -
-	apiRouter.HandleFunc("/alerts/{alert_id:[0-9]+}", s.handlerPass).Methods(http.MethodGet) // -
+	apiRouter.HandleFunc("/alerts", s.getAlerts).Methods(http.MethodGet)                      // -
+	apiRouter.HandleFunc("/alerts/{alert_id:[0-9]+}", s.getAlertByID).Methods(http.MethodGet) // -
 
 	apiRouter.HandleFunc("/incidents", s.handlerPass).Methods(http.MethodGet)                         // -
 	apiRouter.HandleFunc("/incidents/{incidents_id:[0-9]+}", s.handlerPass).Methods(http.MethodGet)   // -

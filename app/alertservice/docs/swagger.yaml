@@ -109,7 +109,7 @@ definitions:
       version:
         type: string
     type: object
-host: 127.0.0.1:8080
+host: 127.0.0.1:8787
 info:
   contact: {}
   description: AlertService
@@ -153,7 +153,7 @@ paths:
       summary: принимает алерты от VM
       tags:
       - alerts
-  /api/v1/alerts/{alert_id}:
+  /api/v1/alerts/{alert_id:int64}:
     get:
       description: Retrieve an alert by its ID
       parameters:

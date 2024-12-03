@@ -4,6 +4,9 @@ import (
 	"alertservice/internal/entity"
 	"encoding/json"
 	"net/http"
+	"strconv"
+
+	"github.com/gorilla/mux"
 )
 
 // incomingAlerts хендлер получения входящих от VM алертов
@@ -13,7 +16,7 @@ import (
 // @Accept json
 // @Produce json
 // @Param notification body entity.VMAlertNotification true "уведомление об алертах"
-// @Success 200 {int} http.StatusCreated
+// @Success 200 {int} http.StatusOK
 // @Router /api/v1/alerts [post]
 func (s *Server) incomingAlerts(w http.ResponseWriter, r *http.Request) {
 	var notification entity.VMAlertNotification
@@ -29,7 +32,6 @@ func (s *Server) incomingAlerts(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Возвращаем успешный ответ
-	w.WriteHeader(http.StatusAccepted)
 	w.WriteHeader(http.StatusOK)
 }
 
@@ -41,6 +43,15 @@ func (s *Server) incomingAlerts(w http.ResponseWriter, r *http.Request) {
 // @Router /api/v1/alerts [get]
 func (s *Server) getAlerts(w http.ResponseWriter, r *http.Request) {
 	// Handler logic
+	alerts, err := s.u.GetAlerts()
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(err)
+	} else {
+		w.WriteHeader(http.StatusAccepted)
+		json.NewEncoder(w).Encode(alerts)
+	}
+
 }
 
 // @Summary Get alert by ID
@@ -49,7 +60,29 @@ func (s *Server) getAlerts(w http.ResponseWriter, r *http.Request) {
 // @Produce json
 // @Param alert_id path int true "Alert ID"
 // @Success 200 {object} entity.Alert
-// @Router /api/v1/alerts/{alert_id} [get]
+// @Router /api/v1/alerts/{alert_id:int64} [get]
 func (s *Server) getAlertByID(w http.ResponseWriter, r *http.Request) {
-	// Handler logic
+	vars := mux.Vars(r)
+	alertIDStr := vars["alert_id"]                       // Получаем alert_id из параметров
+	alertID, err := strconv.ParseInt(alertIDStr, 10, 64) // Преобразуем в int64
+	if err != nil {
+		http.Error(w, "Invalid alert ID", http.StatusBadRequest)
+		return
+	}
+
+	// Вызов метода GetAlert
+	alert, err := s.u.GetAlert(alertID)
+	if err != nil {
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+
+	// Установка заголовка Content-Type
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+
+	// Возврат JSON
+	if err := json.NewEncoder(w).Encode(alert); err != nil {
+		http.Error(w, "Failed to encode response", http.StatusInternalServerError)
+	}
 }

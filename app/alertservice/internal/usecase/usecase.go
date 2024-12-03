@@ -9,11 +9,11 @@ import (
 )
 
 type UseCase struct {
-	db     *repo.TranslationRepo
+	db     *repo.PostgresRepo
 	logger *logger.Logger
 }
 
-func New(cfg *config.Config, db *repo.TranslationRepo, l *logger.Logger) *UseCase {
+func New(cfg *config.Config, db *repo.PostgresRepo, l *logger.Logger) *UseCase {
 	return &UseCase{
 		db:     db,
 		logger: l,
