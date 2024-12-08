@@ -66,3 +66,10 @@ type Notification struct {
 
 type IntervalSetting struct {
 }
+
+// AlertState represents the structure for alert states.
+type AlertState struct {
+	ID          int64  `db:"id"`
+	Name        string `db:"name"`
+	Description string `db:"description"`
+}

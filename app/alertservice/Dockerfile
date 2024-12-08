@@ -20,7 +20,7 @@ FROM alpine:latest
 # Установка необходимых библиотек
 RUN apk --no-cache add ca-certificates
 
-# Копируем скомпилированное приложение из этапа сборки
+# Копируем скомпилированное приложение из этапа сборaки
 WORKDIR /app
 COPY --from=builder /app/config ./config
 COPY --from=builder /app/docs ./docs

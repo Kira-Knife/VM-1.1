@@ -26,6 +26,17 @@ CREATE TABLE IF NOT EXISTS notifications (
     message TEXT NOT NULL  -- Добавлено NOT NULL для обязательных полей
 );
 
+CREATE TABLE alert_states (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(50) NOT NULL,
+    description TEXT
+);
+
+INSERT INTO alert_states (name, description) VALUES
+('Created', ''),
+('In progress', ''),
+('Resolved', ''),
+('Rejected', '');
 
 
 

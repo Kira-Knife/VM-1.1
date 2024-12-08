@@ -11,6 +11,7 @@ import (
 
 // GetAlerts - получение всех алертов
 func (r *PostgresRepo) GetAlerts(ctx context.Context) ([]entity.Alert, error) {
+	// 	SELECT alert_id, alert_name, severity, description, create_at, generator_url, status, starts_at, ends_at FROM public.alerts;
 	sql, args, err := r.db.Builder.
 		Select("alert_id, alert_name, severity, description, create_at, generator_url, status, starts_at, ends_at").
 		From("alerts").
@@ -20,6 +21,7 @@ func (r *PostgresRepo) GetAlerts(ctx context.Context) ([]entity.Alert, error) {
 	}
 
 	rows, err := r.db.Pool.Query(ctx, sql, args...)
+
 	if err != nil {
 		return nil, fmt.Errorf("AlertRepo - GetAlerts - r.Pool.Query: %w", err)
 	}
