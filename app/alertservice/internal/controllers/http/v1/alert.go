@@ -53,6 +53,37 @@ func (s *Server) getAlerts(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// @Summary Получение списка алертов
+// @Description Вернет список алертов отсортированных по времени начиная с begin в колличестве count
+// @Tags alerts
+// @Produce json
+// @Param begin query int true "Starting alert index"
+// @Param count query int true "Number of alerts"
+// @Success 200 {array} entity.Alert
+// @Router /api/v1/alerts/list [get]
+func (s *Server) getListAlerts(w http.ResponseWriter, r *http.Request) {
+	begin, err := strconv.Atoi(r.URL.Query().Get("begin"))
+	if err != nil || begin < 0 {
+		http.Error(w, "Invalid parameter begin", http.StatusBadRequest)
+		return
+	}
+
+	count, err := strconv.Atoi(r.URL.Query().Get("count"))
+	if err != nil || count <= 0 {
+		http.Error(w, "Invalid parameter count", http.StatusBadRequest)
+		return
+	}
+
+	alerts, err := s.u.GetListAlerts(begin, count)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(err)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(alerts)
+}
+
 // @Summary Get alert by ID
 // @Description Retrieve an alert by its ID
 // @Tags alerts

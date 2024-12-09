@@ -88,6 +88,45 @@
                 }
             }
         },
+        "/api/v1/alerts/list": {
+            "get": {
+                "description": "Вернет список алертов отсортированных по времени начиная с begin в колличестве count",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "alerts"
+                ],
+                "summary": "Получение списка алертов",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Starting alert index",
+                        "name": "begin",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Number of alerts",
+                        "name": "count",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/entity.Alert"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/alerts/{alert_id}": {
             "get": {
                 "description": "Retrieve an alert by its ID",

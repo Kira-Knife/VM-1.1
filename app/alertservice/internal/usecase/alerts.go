@@ -74,6 +74,19 @@ func (u *UseCase) GetAlerts() ([]entity.Alert, error) {
 	return alerts, nil
 }
 
+// GetAlerts - Вернуть алерты начиная с индекса begin, count штук
+func (u *UseCase) GetListAlerts(begin, count int) ([]entity.Alert, error) {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	alerts, err := u.db.GetListAlerts(ctx, begin, count)
+	if err != nil {
+		u.logger.Error("u.db.GetListAlerts(ctx, begin, count); %v", err)
+		return nil, fmt.Errorf("u.db.GetListAlerts(ctx, begin, count) - %w", err)
+	}
+	return alerts, nil
+}
+
 // GetAlert - вернуть Alert по alertId
 func (u *UseCase) GetAlert(alertID int64) (entity.Alert, error) {
 	ctx, _ := context.WithCancel(context.Background())

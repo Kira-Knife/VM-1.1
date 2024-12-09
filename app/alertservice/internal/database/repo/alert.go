@@ -51,6 +51,49 @@ func (r *PostgresRepo) GetAlerts(ctx context.Context) ([]entity.Alert, error) {
 	return alerts, nil
 }
 
+// GetAlerts - получение алертов начиная с индекса begin, count штук
+func (r *PostgresRepo) GetListAlerts(ctx context.Context, begin, count int) ([]entity.Alert, error) {
+	sql, args, err := r.db.Builder.
+		Select("alert_id, alert_name, severity, description, create_at, generator_url, status, starts_at, ends_at").
+		From("alerts").
+		OrderBy("create_at DESC").
+		Offset(uint64(begin)).
+		Limit(uint64(count)).
+		ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("AlertRepo - GetAlerts - r.Builder: %w", err)
+	}
+
+	rows, err := r.db.Pool.Query(ctx, sql, args...)
+	if err != nil {
+		return nil, fmt.Errorf("AlertRepo - GetAlerts - r.Pool.Query: %w", err)
+	}
+	defer rows.Close()
+
+	alerts := make([]entity.Alert, 0)
+
+	for rows.Next() {
+		var alert entity.Alert
+		err = rows.Scan(
+			&alert.AlertID,
+			&alert.AlertName,
+			&alert.Severity,
+			&alert.Description,
+			&alert.CreateAt,
+			&alert.GeneratorURL,
+			&alert.Status,
+			&alert.StartsAt,
+			&alert.EndsAt,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("AlertRepo - GetAlerts - rows.Scan: %w", err)
+		}
+		alerts = append(alerts, alert)
+	}
+
+	return alerts, nil
+}
+
 // GetAlert - получение алерта по alertID
 func (r *PostgresRepo) GetAlert(ctx context.Context, alertID int64) (entity.Alert, error) {
 	sql, args, err := r.db.Builder.
