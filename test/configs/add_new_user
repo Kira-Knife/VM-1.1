@@ -1,0 +1,17 @@
+#!/bin/bash
+
+set -e
+#set -evx
+
+# List domain
+# ldapsearch -x -b "dc=example,dc=com" "(objectClass=*)"
+
+# Create group 'users'
+ldapadd -x -D "cn=admin,dc=example,dc=com" -w admin_pass -f /conf/ou_users.ldif >/dev/null
+
+# Create user
+ldapadd -x -D "cn=admin,dc=example,dc=com" -w admin_pass -f /conf/newuser.ldif >/dev/null
+
+# test user
+# ldapsearch -x -D "uid=user123,ou=users,dc=example,dc=com" -w pass123 -b "dc=example,dc=com" "(uid=user123)"
+

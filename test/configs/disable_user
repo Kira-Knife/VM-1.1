@@ -1,0 +1,23 @@
+#!/bin/bash
+
+#set -e
+#set -vx
+
+ADMIN=" -x -D cn=admin,dc=example,dc=com -w admin_pass "
+
+ldapsearch $ADMIN -b "dc=example,dc=com" "(uid=user123)"
+
+ldapmodify $ADMIN <<EOF
+dn: uid=user123,ou=users,dc=example,dc=com
+changetype: modify
+add: pwdAccountLockedTime
+pwdAccountLockedTime: 000001010000Z
+EOF
+
+ldapsearch $ADMIN -b "dc=example,dc=com" "(uid=user123)"
+
+# test user, with requesting error reason
+ldapsearch -x -D "uid=user123,ou=users,dc=example,dc=com" -w pass123 \
+    -E pr=1 \
+    -b "dc=example,dc=com" "(uid=user123)"
+
