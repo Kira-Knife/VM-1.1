@@ -14,6 +14,7 @@ func (s *Server) routeRegistration() {
 	apiRouter := s.router.PathPrefix("/api/v1").Subrouter()
 	apiRouter.Use(s.enableCORS) // включение CORS заголовков
 
+	// POST /api/v1/alerts
 	apiRouter.HandleFunc("/alerts", s.incomingAlerts).Methods(http.MethodPost) // входящие алерты
 
 	// AlertFrontendApi

@@ -36,40 +36,59 @@ type VMAlertNotification struct {
 	Message           string            `json:"message"`
 }
 
+// Alert represents an alert entity
 type Alert struct {
-	AlertID      int64     `json:"alert_id"`
-	AlertName    string    `json:"alert_name"`
-	Severity     string    `json:"severity"`
-	Description  string    `json:"description,omitempty"`
-	CreateAt     time.Time `json:"timestamp"`
-	GeneratorURL string    `json:"generator_url,omitempty"`
-	Status       string    `json:"status,omitempty"`
-	StartsAt     time.Time `json:"startsAt"`
-	EndsAt       time.Time `json:"endsAt"`
+	AlertID      int64  `db:"alert_id" json:"alert_id"`           // Unique identifier for each alert
+	AlertName    string `db:"alert_name" json:"alert_name"`       // Name of the alert
+	Severity     string `db:"severity" json:"severity"`           // Severity level of the alert
+	Description  string `db:"description" json:"description"`     // Detailed description of the alert
+	CreateAt     string `db:"create_at" json:"create_at"`         // Timestamp when the alert was created
+	GeneratorURL string `db:"generator_url" json:"generator_url"` // URL of the alert generator
+	Status       string `db:"status" json:"status"`               // Current status of the alert
+	Job          string `db:"job" json:"job"`                     // Job name, e.g., node_exporter, kafka_exporter
+	Service      string `db:"service" json:"service"`             // Arbitrary label for service, can be null
+	Instance     string `db:"instance" json:"instance"`           // IP and port of the source
+	StartsAt     string `db:"starts_at" json:"starts_at"`         // Start time of the alert
+	EndsAt       string `db:"ends_at" json:"ends_at"`             // End time of the alert
 }
 
+// Incident represents an incident entity
 type Incident struct {
-	IncidentID   int64     `json:"incident_id"`
-	AlertID      int64     `json:"alert_id,omitempty"`
-	Severity     string    `json:"severity"`
-	Description  string    `json:"description,omitempty"`
-	Status       string    `json:"status,omitempty"`
-	CreateAt     time.Time `json:"timestamp"`
-	GeneratorURL string    `json:"generator_url,omitempty"`
+	IncidentID   int64  `db:"incident_id" json:"incident_id"`     // Unique identifier for each incident
+	SeverityID   int    `db:"severity_id" json:"severity_id"`     // Level of criticality
+	Description  string `db:"description" json:"description"`     // Detailed description of the incident
+	StatusID     int    `db:"status_id" json:"status_id"`         // Current status of the incident
+	CreateAt     string `db:"create_at" json:"create_at"`         // Timestamp when the incident was created
+	GeneratorURL string `db:"generator_url" json:"generator_url"` // URL of the incident generator
 }
 
+// IncidentAlert represents the relationship between incidents and alerts
+type IncidentAlert struct {
+	ID         int64 `db:"id" json:"id"`                   // Unique identifier for each record
+	IncidentID int64 `db:"incident_id" json:"incident_id"` // Reference to the incident
+	AlertID    int64 `db:"alert_id" json:"alert_id"`       // Reference to the alert
+}
+
+// Notification represents a notification entity
 type Notification struct {
-	ID        int    `json:"id"`
-	Recipient string `json:"recipient"`
-	Message   string `json:"message"`
+	ID        int64  `db:"id" json:"id"`               // Unique identifier for each notification
+	Recipient string `db:"recipient" json:"recipient"` // Recipient of the notification
+	Message   string `db:"message" json:"message"`     // Message content of the notification
+}
+
+// IncidentState represents the state of an incident
+type IncidentState struct {
+	ID          int    `db:"id" json:"id"`                   // Unique identifier for each state
+	Name        string `db:"name" json:"name"`               // Name of the state
+	Description string `db:"description" json:"description"` // Detailed description of the state
+}
+
+// Severity represents a severity level
+type Severity struct {
+	ID          int64  `db:"id" json:"id"`                   // Unique identifier for each severity level
+	Name        string `db:"name" json:"name"`               // Name of the severity level
+	Description string `db:"description" json:"description"` // Detailed description of the severity level
 }
 
 type IntervalSetting struct {
-}
-
-// AlertState represents the structure for alert states.
-type AlertState struct {
-	ID          int64  `db:"id"`
-	Name        string `db:"name"`
-	Description string `db:"description"`
 }

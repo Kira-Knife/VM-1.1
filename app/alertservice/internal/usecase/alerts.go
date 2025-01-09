@@ -44,21 +44,20 @@ func (u *UseCase) IncomingAlerts(vm_alert_notif entity.VMAlertNotification) erro
 	alerts, incidents := ConvertNotificationToEntities(vm_alert_notif)
 	ctx, _ := context.WithCancel(context.Background())
 	for i, alert := range alerts {
-		alertId, err := u.db.StoreAlert(ctx, alert)
+		alertId, err := u.db.StoreAlert(ctx, alert) // сохранение алерта в базу
 		if err != nil {
 			u.logger.Error("u.db.StoreAlert(ctx, alert) - alert name: %s - err: %v", alert.AlertName, err)
 			continue
 		}
-		incidents[i].AlertID = alertId
-		incidents[i].Status = "open" // статус по умолчанию
-		err = u.db.StoreIncident(ctx, incidents[i])
+		incidents[i].AlertID = alertId              // привязка алерта к инциденту
+		incidents[i].Status = "open"                // статус по умолчанию
+		err = u.db.StoreIncident(ctx, incidents[i]) // Сохранение инцидента в базу
 		if err != nil {
 			u.logger.Error("u.db.StoreIncident(ctx, incidents[i]) - Incident sescription: %s - err: %v", incidents[i].Description, err)
 			u.db.DeleteAlert(ctx, alertId)
 			continue
 		}
 	}
-	// создание инцидента + alert в базе
 
 	return nil
 }

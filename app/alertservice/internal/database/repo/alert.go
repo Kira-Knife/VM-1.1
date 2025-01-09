@@ -53,6 +53,13 @@ func (r *PostgresRepo) GetAlerts(ctx context.Context) ([]entity.Alert, error) {
 
 // GetAlerts - получение алертов начиная с индекса begin, count штук
 func (r *PostgresRepo) GetListAlerts(ctx context.Context, begin, count int) ([]entity.Alert, error) {
+	/*
+		SELECT alert_id, alert_name, severity, description, create_at, generator_url, status, starts_at, ends_at
+		FROM alerts
+		ORDER BY create_at DESC
+		OFFSET $1
+		LIMIT $2;
+	*/
 	sql, args, err := r.db.Builder.
 		Select("alert_id, alert_name, severity, description, create_at, generator_url, status, starts_at, ends_at").
 		From("alerts").
