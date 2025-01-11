@@ -14,7 +14,7 @@ import (
 // @Router /api/v1/alert/states [get]
 func (s *Server) getAlertStates(w http.ResponseWriter, r *http.Request) {
 	// Handler logic
-	alerts, err := s.u.GetAllAlertStates()
+	alerts, err := s.u.GetIncidentStates()
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(err)

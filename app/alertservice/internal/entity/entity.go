@@ -62,20 +62,6 @@ type Incident struct {
 	GeneratorURL string `db:"generator_url" json:"generator_url"` // URL of the incident generator
 }
 
-// IncidentAlert represents the relationship between incidents and alerts
-type IncidentAlert struct {
-	ID         int64 `db:"id" json:"id"`                   // Unique identifier for each record
-	IncidentID int64 `db:"incident_id" json:"incident_id"` // Reference to the incident
-	AlertID    int64 `db:"alert_id" json:"alert_id"`       // Reference to the alert
-}
-
-// Notification represents a notification entity
-type Notification struct {
-	ID        int64  `db:"id" json:"id"`               // Unique identifier for each notification
-	Recipient string `db:"recipient" json:"recipient"` // Recipient of the notification
-	Message   string `db:"message" json:"message"`     // Message content of the notification
-}
-
 // IncidentState represents the state of an incident
 type IncidentState struct {
 	ID          int    `db:"id" json:"id"`                   // Unique identifier for each state
@@ -88,6 +74,20 @@ type Severity struct {
 	ID          int64  `db:"id" json:"id"`                   // Unique identifier for each severity level
 	Name        string `db:"name" json:"name"`               // Name of the severity level
 	Description string `db:"description" json:"description"` // Detailed description of the severity level
+}
+
+// IncidentAlert represents the relationship between incidents and alerts
+type IncidentAlert struct {
+	ID         int64 `db:"id" json:"id"`                   // Unique identifier for each record
+	IncidentID int64 `db:"incident_id" json:"incident_id"` // Reference to the incident
+	AlertID    int64 `db:"alert_id" json:"alert_id"`       // Reference to the alert
+}
+
+// Notification represents a notification entity
+type Notification struct {
+	ID        int64  `db:"id" json:"id"`               // Unique identifier for each notification
+	Recipient string `db:"recipient" json:"recipient"` // Recipient of the notification
+	Message   string `db:"message" json:"message"`     // Message content of the notification
 }
 
 type IntervalSetting struct {

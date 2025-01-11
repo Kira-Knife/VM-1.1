@@ -11,9 +11,8 @@ import (
 
 // GetAlerts - получение всех алертов
 func (r *PostgresRepo) GetAlerts(ctx context.Context) ([]entity.Alert, error) {
-	// 	SELECT alert_id, alert_name, severity, description, create_at, generator_url, status, starts_at, ends_at FROM public.alerts;
 	sql, args, err := r.db.Builder.
-		Select("alert_id, alert_name, severity, description, create_at, generator_url, status, starts_at, ends_at").
+		Select("alert_id, alert_name, severity, description, create_at, generator_url, status, job, service, instance, starts_at, ends_at").
 		From("alerts").
 		ToSql()
 	if err != nil {
@@ -21,7 +20,6 @@ func (r *PostgresRepo) GetAlerts(ctx context.Context) ([]entity.Alert, error) {
 	}
 
 	rows, err := r.db.Pool.Query(ctx, sql, args...)
-
 	if err != nil {
 		return nil, fmt.Errorf("AlertRepo - GetAlerts - r.Pool.Query: %w", err)
 	}
@@ -39,6 +37,9 @@ func (r *PostgresRepo) GetAlerts(ctx context.Context) ([]entity.Alert, error) {
 			&alert.CreateAt,
 			&alert.GeneratorURL,
 			&alert.Status,
+			&alert.Job,
+			&alert.Service,
+			&alert.Instance,
 			&alert.StartsAt,
 			&alert.EndsAt,
 		)
@@ -61,19 +62,19 @@ func (r *PostgresRepo) GetListAlerts(ctx context.Context, begin, count int) ([]e
 		LIMIT $2;
 	*/
 	sql, args, err := r.db.Builder.
-		Select("alert_id, alert_name, severity, description, create_at, generator_url, status, starts_at, ends_at").
+		Select("alert_id, alert_name, severity, description, create_at, generator_url, status, job, service, instance, starts_at, ends_at").
 		From("alerts").
 		OrderBy("create_at DESC").
 		Offset(uint64(begin)).
 		Limit(uint64(count)).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("AlertRepo - GetAlerts - r.Builder: %w", err)
+		return nil, fmt.Errorf("AlertRepo - GetListAlerts - r.Builder: %w", err)
 	}
 
 	rows, err := r.db.Pool.Query(ctx, sql, args...)
 	if err != nil {
-		return nil, fmt.Errorf("AlertRepo - GetAlerts - r.Pool.Query: %w", err)
+		return nil, fmt.Errorf("AlertRepo - GetListAlerts - r.Pool.Query: %w", err)
 	}
 	defer rows.Close()
 
@@ -89,11 +90,14 @@ func (r *PostgresRepo) GetListAlerts(ctx context.Context, begin, count int) ([]e
 			&alert.CreateAt,
 			&alert.GeneratorURL,
 			&alert.Status,
+			&alert.Job,
+			&alert.Service,
+			&alert.Instance,
 			&alert.StartsAt,
 			&alert.EndsAt,
 		)
 		if err != nil {
-			return nil, fmt.Errorf("AlertRepo - GetAlerts - rows.Scan: %w", err)
+			return nil, fmt.Errorf("AlertRepo - GetListAlerts - rows.Scan: %w", err)
 		}
 		alerts = append(alerts, alert)
 	}
@@ -104,7 +108,7 @@ func (r *PostgresRepo) GetListAlerts(ctx context.Context, begin, count int) ([]e
 // GetAlert - получение алерта по alertID
 func (r *PostgresRepo) GetAlert(ctx context.Context, alertID int64) (entity.Alert, error) {
 	sql, args, err := r.db.Builder.
-		Select("alert_id, alert_name, severity, description, create_at, generator_url, status, starts_at, ends_at").
+		Select("alert_id, alert_name, severity, description, create_at, generator_url, status, job, service, instance, starts_at, ends_at").
 		From("alerts").
 		Where(squirrel.Eq{"alert_id": alertID}).
 		ToSql()
@@ -123,6 +127,9 @@ func (r *PostgresRepo) GetAlert(ctx context.Context, alertID int64) (entity.Aler
 		&alert.CreateAt,
 		&alert.GeneratorURL,
 		&alert.Status,
+		&alert.Job,
+		&alert.Service,
+		&alert.Instance,
 		&alert.StartsAt,
 		&alert.EndsAt,
 	)
@@ -135,11 +142,9 @@ func (r *PostgresRepo) GetAlert(ctx context.Context, alertID int64) (entity.Aler
 
 // StoreAlert - запись алерта в таблицу alerts
 func (r *PostgresRepo) StoreAlert(ctx context.Context, alert entity.Alert) (int64, error) {
-	var alertID int64
-
 	sql, args, err := r.db.Builder.
 		Insert("alerts").
-		Columns("alert_name, severity, description, create_at, generator_url, status, starts_at, ends_at").
+		Columns("alert_name, severity, description, create_at, generator_url, status, job, service, instance, starts_at, ends_at").
 		Values(
 			alert.AlertName,
 			alert.Severity,
@@ -147,16 +152,19 @@ func (r *PostgresRepo) StoreAlert(ctx context.Context, alert entity.Alert) (int6
 			alert.CreateAt,
 			alert.GeneratorURL,
 			alert.Status,
+			alert.Job,
+			alert.Service,
+			alert.Instance,
 			alert.StartsAt,
 			alert.EndsAt,
 		).
-		Suffix("RETURNING alert_id"). // Добавляем RETURNING для получения alert_id
+		Suffix("RETURNING alert_id").
 		ToSql()
 	if err != nil {
 		return 0, fmt.Errorf("AlertRepo - StoreAlert - r.Builder: %w", err)
 	}
 
-	// Выполняем запрос и получаем alert_id
+	var alertID int64
 	err = r.db.Pool.QueryRow(ctx, sql, args...).Scan(&alertID)
 	if err != nil {
 		return 0, fmt.Errorf("AlertRepo - StoreAlert - r.Pool.QueryRow: %w", err)

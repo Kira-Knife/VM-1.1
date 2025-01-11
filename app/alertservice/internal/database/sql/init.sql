@@ -24,6 +24,20 @@ CREATE TABLE incidents (
   generator_url TEXT  -- URL of the incident generator
 );
 
+-- Alert states table
+CREATE TABLE incident_states (
+  id SERIAL PRIMARY KEY,  -- Unique identifier for each state
+  name VARCHAR(50) NOT NULL,  -- Name of the state
+  description TEXT  -- Detailed description of the state
+);
+
+-- Severities table
+CREATE TABLE severities (
+  id BIGSERIAL PRIMARY KEY,  -- Unique identifier for each severity level
+  name VARCHAR(50) NOT NULL UNIQUE,  -- Name of the severity level
+  description TEXT  -- Detailed description of the severity level
+);
+
 -- Table to track alerts per incident
 CREATE TABLE incident_alerts (
   id BIGSERIAL PRIMARY KEY,  -- Unique identifier for each record
@@ -38,19 +52,7 @@ CREATE TABLE notifications (
   message TEXT NOT NULL  -- Message content of the notification
 );
 
--- Alert states table
-CREATE TABLE incident_states (
-  id SERIAL PRIMARY KEY,  -- Unique identifier for each state
-  name VARCHAR(50) NOT NULL,  -- Name of the state
-  description TEXT  -- Detailed description of the state
-);
 
--- Severities table
-CREATE TABLE severities (
-  id BIGSERIAL PRIMARY KEY,  -- Unique identifier for each severity level
-  name VARCHAR(50) NOT NULL UNIQUE,  -- Name of the severity level
-  description TEXT  -- Detailed description of the severity level
-);
 
 
 
