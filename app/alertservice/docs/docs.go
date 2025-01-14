@@ -16,29 +16,6 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/api/v1/alert/states": {
-            "get": {
-                "description": "Retrieve a list of alerts states",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "alerts"
-                ],
-                "summary": "Get all alerts",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/entity.AlertState"
-                            }
-                        }
-                    }
-                }
-            }
-        },
         "/api/v1/alerts": {
             "get": {
                 "description": "Retrieve a list of alerts",
@@ -157,6 +134,29 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/entity.Alert"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/incident_states": {
+            "get": {
+                "description": "Retrieve a list of alerts states",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "state"
+                ],
+                "summary": "Get all alerts",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/entity.IncidentState"
+                            }
                         }
                     }
                 }
@@ -299,44 +299,51 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "alert_id": {
+                    "description": "Unique identifier for each alert",
                     "type": "integer"
                 },
                 "alert_name": {
+                    "description": "Name of the alert",
+                    "type": "string"
+                },
+                "create_at": {
+                    "description": "Timestamp when the alert was created",
                     "type": "string"
                 },
                 "description": {
+                    "description": "Detailed description of the alert",
                     "type": "string"
                 },
-                "endsAt": {
+                "ends_at": {
+                    "description": "End time of the alert",
                     "type": "string"
                 },
                 "generator_url": {
+                    "description": "URL of the alert generator",
+                    "type": "string"
+                },
+                "instance": {
+                    "description": "IP and port of the source",
+                    "type": "string"
+                },
+                "job": {
+                    "description": "Job name, e.g., node_exporter, kafka_exporter",
+                    "type": "string"
+                },
+                "service": {
+                    "description": "Arbitrary label for service, can be null",
                     "type": "string"
                 },
                 "severity": {
+                    "description": "Severity level of the alert",
                     "type": "string"
                 },
-                "startsAt": {
+                "starts_at": {
+                    "description": "Start time of the alert",
                     "type": "string"
                 },
                 "status": {
-                    "type": "string"
-                },
-                "timestamp": {
-                    "type": "string"
-                }
-            }
-        },
-        "entity.AlertState": {
-            "type": "object",
-            "properties": {
-                "description": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "name": {
+                    "description": "Current status of the alert",
                     "type": "string"
                 }
             }
@@ -344,25 +351,45 @@ const docTemplate = `{
         "entity.Incident": {
             "type": "object",
             "properties": {
-                "alert_id": {
-                    "type": "integer"
+                "create_at": {
+                    "description": "Timestamp when the incident was created",
+                    "type": "string"
                 },
                 "description": {
+                    "description": "Detailed description of the incident",
                     "type": "string"
                 },
                 "generator_url": {
+                    "description": "URL of the incident generator",
                     "type": "string"
                 },
                 "incident_id": {
+                    "description": "Unique identifier for each incident",
                     "type": "integer"
                 },
-                "severity": {
+                "severity_id": {
+                    "description": "Level of criticality",
+                    "type": "integer"
+                },
+                "status_id": {
+                    "description": "Current status of the incident",
+                    "type": "integer"
+                }
+            }
+        },
+        "entity.IncidentState": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "description": "Detailed description of the state",
                     "type": "string"
                 },
-                "status": {
-                    "type": "string"
+                "id": {
+                    "description": "Unique identifier for each state",
+                    "type": "integer"
                 },
-                "timestamp": {
+                "name": {
+                    "description": "Name of the state",
                     "type": "string"
                 }
             }
@@ -488,15 +515,15 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
-	Host:             "127.0.0.1:8787",
+	Host:             "localhost:8787",
 	BasePath:         "/",
 	Schemes:          []string{},
 	Title:            "AlertService",
 	Description:      "AlertService",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
-	// LeftDelim:        "{{",
-	// RightDelim:       "}}",
+	//LeftDelim:        "{{",
+	//RightDelim:       "}}",
 }
 
 func init() {

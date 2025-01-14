@@ -3,48 +3,73 @@ definitions:
   entity.Alert:
     properties:
       alert_id:
+        description: Unique identifier for each alert
         type: integer
       alert_name:
+        description: Name of the alert
+        type: string
+      create_at:
+        description: Timestamp when the alert was created
         type: string
       description:
+        description: Detailed description of the alert
         type: string
-      endsAt:
+      ends_at:
+        description: End time of the alert
         type: string
       generator_url:
+        description: URL of the alert generator
+        type: string
+      instance:
+        description: IP and port of the source
+        type: string
+      job:
+        description: Job name, e.g., node_exporter, kafka_exporter
+        type: string
+      service:
+        description: Arbitrary label for service, can be null
         type: string
       severity:
+        description: Severity level of the alert
         type: string
-      startsAt:
+      starts_at:
+        description: Start time of the alert
         type: string
       status:
-        type: string
-      timestamp:
-        type: string
-    type: object
-  entity.AlertState:
-    properties:
-      description:
-        type: string
-      id:
-        type: integer
-      name:
+        description: Current status of the alert
         type: string
     type: object
   entity.Incident:
     properties:
-      alert_id:
-        type: integer
+      create_at:
+        description: Timestamp when the incident was created
+        type: string
       description:
+        description: Detailed description of the incident
         type: string
       generator_url:
+        description: URL of the incident generator
         type: string
       incident_id:
+        description: Unique identifier for each incident
         type: integer
-      severity:
+      severity_id:
+        description: Level of criticality
+        type: integer
+      status_id:
+        description: Current status of the incident
+        type: integer
+    type: object
+  entity.IncidentState:
+    properties:
+      description:
+        description: Detailed description of the state
         type: string
-      status:
-        type: string
-      timestamp:
+      id:
+        description: Unique identifier for each state
+        type: integer
+      name:
+        description: Name of the state
         type: string
     type: object
   entity.IntervalSetting:
@@ -123,7 +148,7 @@ definitions:
       status:
         type: string
     type: object
-host: 127.0.0.1:8787
+host: localhost:8787
 info:
   contact: {}
   description: AlertService
@@ -131,21 +156,6 @@ info:
   title: AlertService
   version: "1.0"
 paths:
-  /api/v1/alert/states:
-    get:
-      description: Retrieve a list of alerts states
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/entity.AlertState'
-            type: array
-      summary: Get all alerts
-      tags:
-      - alerts
   /api/v1/alerts:
     get:
       description: Retrieve a list of alerts
@@ -228,6 +238,21 @@ paths:
       summary: Получение списка алертов
       tags:
       - alerts
+  /api/v1/incident_states:
+    get:
+      description: Retrieve a list of alerts states
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/entity.IncidentState'
+            type: array
+      summary: Get all alerts
+      tags:
+      - state
   /api/v1/incidents:
     get:
       description: Retrieve a list of incidents

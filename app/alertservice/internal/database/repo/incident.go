@@ -46,8 +46,8 @@ func (r *PostgresRepo) GetIncidents(ctx context.Context) ([]entity.Incident, err
 	return incidents, nil
 }
 
-// StoreIncident inserts a new incident into the database.
-func (r *PostgresRepo) StoreIncident(ctx context.Context, incident entity.Incident) error {
+// StoreIncident inserts a new incident into the database and returns its ID.
+func (r *PostgresRepo) StoreIncident(ctx context.Context, incident entity.Incident) (int64, error) {
 	sql, args, err := r.db.Builder.
 		Insert("incidents").
 		Columns("severity_id, description, status_id, create_at, generator_url").
@@ -58,17 +58,19 @@ func (r *PostgresRepo) StoreIncident(ctx context.Context, incident entity.Incide
 			incident.CreateAt,
 			incident.GeneratorURL,
 		).
+		Suffix("RETURNING incident_id"). // Добавляем RETURNING для получения incident_id
 		ToSql()
 	if err != nil {
-		return fmt.Errorf("IncidentRepo - StoreIncident - r.Builder: %w", err)
+		return 0, fmt.Errorf("IncidentRepo - StoreIncident - r.Builder: %w", err)
 	}
 
-	_, err = r.db.Pool.Exec(ctx, sql, args...)
+	var incidentID int64
+	err = r.db.Pool.QueryRow(ctx, sql, args...).Scan(&incidentID)
 	if err != nil {
-		return fmt.Errorf("IncidentRepo - StoreIncident - r.Pool.Exec: %w", err)
+		return 0, fmt.Errorf("IncidentRepo - StoreIncident - r.Pool.QueryRow: %w", err)
 	}
 
-	return nil
+	return incidentID, nil
 }
 
 // GetIncident retrieves a single incident by its ID.

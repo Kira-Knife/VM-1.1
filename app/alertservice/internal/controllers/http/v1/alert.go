@@ -19,6 +19,7 @@ import (
 // @Success 200 {int} http.StatusOK
 // @Router /api/v1/alerts [post]
 func (s *Server) incomingAlerts(w http.ResponseWriter, r *http.Request) {
+	s.logger.Debug("incomingAlerts")
 	var notification entity.VMAlertNotification
 	if err := json.NewDecoder(r.Body).Decode(&notification); err != nil {
 		http.Error(w, "Invalid request payload", http.StatusBadRequest)

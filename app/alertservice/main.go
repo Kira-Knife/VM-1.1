@@ -21,7 +21,7 @@ import (
 // @description     AlertService
 // @termsOfService  http://swagger.io/terms/
 
-// @host      127.0.0.1:8787
+// @host      localhost:8787
 // @BasePath  /
 
 func main() {

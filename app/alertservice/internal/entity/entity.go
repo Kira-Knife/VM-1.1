@@ -38,28 +38,28 @@ type VMAlertNotification struct {
 
 // Alert represents an alert entity
 type Alert struct {
-	AlertID      int64  `db:"alert_id" json:"alert_id"`           // Unique identifier for each alert
-	AlertName    string `db:"alert_name" json:"alert_name"`       // Name of the alert
-	Severity     string `db:"severity" json:"severity"`           // Severity level of the alert
-	Description  string `db:"description" json:"description"`     // Detailed description of the alert
-	CreateAt     string `db:"create_at" json:"create_at"`         // Timestamp when the alert was created
-	GeneratorURL string `db:"generator_url" json:"generator_url"` // URL of the alert generator
-	Status       string `db:"status" json:"status"`               // Current status of the alert
-	Job          string `db:"job" json:"job"`                     // Job name, e.g., node_exporter, kafka_exporter
-	Service      string `db:"service" json:"service"`             // Arbitrary label for service, can be null
-	Instance     string `db:"instance" json:"instance"`           // IP and port of the source
-	StartsAt     string `db:"starts_at" json:"starts_at"`         // Start time of the alert
-	EndsAt       string `db:"ends_at" json:"ends_at"`             // End time of the alert
+	AlertID      int64     `db:"alert_id" json:"alert_id"`           // Unique identifier for each alert
+	AlertName    string    `db:"alert_name" json:"alert_name"`       // Name of the alert
+	Severity     string    `db:"severity" json:"severity"`           // Severity level of the alert
+	Description  string    `db:"description" json:"description"`     // Detailed description of the alert
+	CreateAt     time.Time `db:"create_at" json:"create_at"`         // Timestamp when the alert was created
+	GeneratorURL string    `db:"generator_url" json:"generator_url"` // URL of the alert generator
+	Status       string    `db:"status" json:"status"`               // Current status of the alert
+	Job          string    `db:"job" json:"job"`                     // Job name, e.g., node_exporter, kafka_exporter
+	Service      string    `db:"service" json:"service"`             // Arbitrary label for service, can be null
+	Instance     string    `db:"instance" json:"instance"`           // IP and port of the source
+	StartsAt     time.Time `db:"starts_at" json:"starts_at"`         // Start time of the alert
+	EndsAt       time.Time `db:"ends_at" json:"ends_at"`             // End time of the alert
 }
 
 // Incident represents an incident entity
 type Incident struct {
-	IncidentID   int64  `db:"incident_id" json:"incident_id"`     // Unique identifier for each incident
-	SeverityID   int    `db:"severity_id" json:"severity_id"`     // Level of criticality
-	Description  string `db:"description" json:"description"`     // Detailed description of the incident
-	StatusID     int    `db:"status_id" json:"status_id"`         // Current status of the incident
-	CreateAt     string `db:"create_at" json:"create_at"`         // Timestamp when the incident was created
-	GeneratorURL string `db:"generator_url" json:"generator_url"` // URL of the incident generator
+	IncidentID   int64     `db:"incident_id" json:"incident_id"`     // Unique identifier for each incident
+	SeverityID   int       `db:"severity_id" json:"severity_id"`     // Level of criticality
+	Description  string    `db:"description" json:"description"`     // Detailed description of the incident
+	StatusID     int       `db:"status_id" json:"status_id"`         // Current status of the incident
+	CreateAt     time.Time `db:"create_at" json:"create_at"`         // Timestamp when the incident was created
+	GeneratorURL string    `db:"generator_url" json:"generator_url"` // URL of the incident generator
 }
 
 // IncidentState represents the state of an incident

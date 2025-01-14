@@ -7,6 +7,7 @@ import (
 	"time"
 )
 
+// ConvertNotificationToEntities преобразует VMAlertNotification в массивы Alert и Incident.
 func ConvertNotificationToEntities(notification entity.VMAlertNotification) ([]entity.Alert, []entity.Incident) {
 	var alerts []entity.Alert
 	var incidents []entity.Incident
@@ -16,19 +17,21 @@ func ConvertNotificationToEntities(notification entity.VMAlertNotification) ([]e
 			AlertName:    alertData.Labels["alertname"],
 			Severity:     alertData.Labels["severity"],
 			Description:  alertData.Annotations["summary"],
-			CreateAt:     time.Now(), // Или другой подходящий временной штамп
+			CreateAt:     time.Now(),
 			GeneratorURL: alertData.GeneratorURL,
 			Status:       alertData.Status,
+			Job:          alertData.Labels["job"],
+			Service:      alertData.Labels["service"],
+			Instance:     alertData.Labels["instance"],
 			StartsAt:     alertData.StartsAt,
 			EndsAt:       alertData.EndsAt,
 		}
 		alerts = append(alerts, alert)
 
 		incident := entity.Incident{
-			AlertID:      alert.AlertID,
-			Severity:     alert.Severity,
+			SeverityID:   parseSeverity(alert.Severity),
 			Description:  alert.Description,
-			Status:       alert.Status,
+			StatusID:     parseStatus(alert.Status),
 			CreateAt:     alert.CreateAt,
 			GeneratorURL: alert.GeneratorURL,
 		}
@@ -38,10 +41,38 @@ func ConvertNotificationToEntities(notification entity.VMAlertNotification) ([]e
 	return alerts, incidents
 }
 
+// parseSeverity преобразует строковое значение серьезности в ID.
+func parseSeverity(severity string) int {
+	// Пример преобразования, замените на реальную логику
+	switch severity {
+	case "critical":
+		return 3
+	case "warning":
+		return 2
+	default:
+		return 1
+	}
+}
+
+// parseStatus преобразует строковое значение статуса в ID.
+func parseStatus(status string) int {
+	// Пример преобразования, замените на реальную логику
+	switch status {
+	case "firing":
+		return 3
+	case "resolved":
+		return 2
+	default:
+		return 1
+	}
+}
+
 // IncomingAlerts - обработка входящих алертов
 func (u *UseCase) IncomingAlerts(vm_alert_notif entity.VMAlertNotification) error {
+	u.logger.Debug("IncomingAlerts: %+v", vm_alert_notif)
 	// Преобразование в Alert
 	alerts, incidents := ConvertNotificationToEntities(vm_alert_notif)
+	u.logger.Debug("Успешная конвертация: %+v,%+v.", alerts, incidents)
 	ctx, _ := context.WithCancel(context.Background())
 	for i, alert := range alerts {
 		alertId, err := u.db.StoreAlert(ctx, alert) // сохранение алерта в базу
@@ -49,11 +80,18 @@ func (u *UseCase) IncomingAlerts(vm_alert_notif entity.VMAlertNotification) erro
 			u.logger.Error("u.db.StoreAlert(ctx, alert) - alert name: %s - err: %v", alert.AlertName, err)
 			continue
 		}
-		incidents[i].AlertID = alertId              // привязка алерта к инциденту
-		incidents[i].Status = "open"                // статус по умолчанию
-		err = u.db.StoreIncident(ctx, incidents[i]) // Сохранение инцидента в базу
+		incidents[i].StatusID = 1                                // статус по умолчанию
+		incidentID, err := u.db.StoreIncident(ctx, incidents[i]) // Сохранение инцидента в базу
 		if err != nil {
 			u.logger.Error("u.db.StoreIncident(ctx, incidents[i]) - Incident sescription: %s - err: %v", incidents[i].Description, err)
+			u.db.DeleteAlert(ctx, alertId)
+			continue
+		}
+		err = u.db.StoreIncidentAlert(ctx,
+			entity.IncidentAlert{IncidentID: incidentID, AlertID: alertId},
+		)
+		if err != nil { // подправить обработку ошибки
+			u.logger.Error("u.db.StoreIncidentAlert: %w", err)
 			u.db.DeleteAlert(ctx, alertId)
 			continue
 		}
