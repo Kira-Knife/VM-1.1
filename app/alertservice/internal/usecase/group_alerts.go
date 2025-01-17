@@ -11,7 +11,6 @@ func (u *UseCase) GetSortedIncidents(ctx context.Context) ([]entity.GroupInciden
 	if err != nil {
 		return nil, err
 	}
-
 	// Инциденты уже отсортированы по starts_at в SQL-запросе.
 	return groupIncidents, nil
 }

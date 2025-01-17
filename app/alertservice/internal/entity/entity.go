@@ -1,6 +1,7 @@
 package entity
 
 import (
+	"database/sql"
 	"encoding/json"
 	"time"
 )
@@ -109,14 +110,13 @@ type VMAlertServAlert struct {
 }
 
 type GroupIncident struct {
-	IncidentID   int64  `json:"incident_id"`
-	Severity     string `json:"severity"`
-	Description  string `json:"description"`
-	Status       string `json:"status"`
-	CreateAt     string `json:"create_at"`
-	GeneratorURL string `json:"generator_url"`
-	AlertName    string `json:"alert_name"`
-	AlertCount   int    `json:"alert_count"`
-	FirstStartAt string `json:"first_start_at"`
-	LastStartAt  string `json:"last_start_at"`
+	IncidentID   int64          `json:"incident_id"`
+	Description  sql.NullString `json:"description"`
+	CreateAt     time.Time      `json:"create_at"`
+	GeneratorURL sql.NullString `json:"generator_url"`
+	Severity     string         `json:"severity"`
+	Status       string         `json:"status"`
+	AlertCount   int            `json:"alert_count"`
+	FirstStartAt time.Time      `json:"first_start_at"`
+	LastStartAt  time.Time      `json:"last_start_at"`
 }
