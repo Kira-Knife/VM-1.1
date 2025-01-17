@@ -1,6 +1,9 @@
 package entity
 
-import "time"
+import (
+	"encoding/json"
+	"time"
+)
 
 // Alert represents an individual alert within the JSON payload.
 type VMAlert struct {
@@ -91,4 +94,29 @@ type Notification struct {
 }
 
 type IntervalSetting struct {
+}
+
+// VMAlert представляет собой структуру для таблицы vm_alert.
+type VMAlertJson struct {
+	ID    int64           `json:"id"`    // Уникальный идентификатор
+	Alert json.RawMessage `json:"alert"` // Данные в формате JSON
+}
+
+// VMAlertServAlert представляет собой структуру для таблицы vm_alert_serv_alert.
+type VMAlertServAlert struct {
+	AlertID       int64 `json:"alert_id"`    // Идентификатор оповещения
+	VMAlertJsonID int64 `json:"vm_alert_id"` // Идентификатор VM оповещения
+}
+
+type GroupIncident struct {
+	IncidentID   int64  `json:"incident_id"`
+	Severity     string `json:"severity"`
+	Description  string `json:"description"`
+	Status       string `json:"status"`
+	CreateAt     string `json:"create_at"`
+	GeneratorURL string `json:"generator_url"`
+	AlertName    string `json:"alert_name"`
+	AlertCount   int    `json:"alert_count"`
+	FirstStartAt string `json:"first_start_at"`
+	LastStartAt  string `json:"last_start_at"`
 }

@@ -14,6 +14,7 @@ func (r *PostgresRepo) GetAlerts(ctx context.Context) ([]entity.Alert, error) {
 	sql, args, err := r.db.Builder.
 		Select("alert_id, alert_name, severity, description, create_at, generator_url, status, job, service, instance, starts_at, ends_at").
 		From("alerts").
+		OrderBy("starts_at DESC"). // starts_at or create_at
 		ToSql()
 	if err != nil {
 		return nil, fmt.Errorf("AlertRepo - GetAlerts - r.Builder: %w", err)

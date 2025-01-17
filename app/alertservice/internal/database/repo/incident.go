@@ -14,6 +14,7 @@ func (r *PostgresRepo) GetIncidents(ctx context.Context) ([]entity.Incident, err
 	sql, args, err := r.db.Builder.
 		Select("incident_id, severity_id, description, status_id, create_at, generator_url").
 		From("incidents").
+		OrderBy("create_at DESC").
 		ToSql()
 	if err != nil {
 		return nil, fmt.Errorf("IncidentRepo - GetIncidents - r.Builder: %w", err)

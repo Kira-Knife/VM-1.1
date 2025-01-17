@@ -71,6 +71,32 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/alerts/groups": {
+            "get": {
+                "description": "Возвращает список инцидентов с детализированной информацией, отсортированных по времени начала",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "groups"
+                ],
+                "summary": "Получить сгруппированные инциденты",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/entity.Incident"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/alerts/list": {
             "get": {
                 "description": "Вернет список алертов отсортированных по времени начиная с begin в колличестве count",
@@ -522,8 +548,8 @@ var SwaggerInfo = &swag.Spec{
 	Description:      "AlertService",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
-	// LeftDelim:        "{{",
-	// RightDelim:       "}}",
+	//LeftDelim:        "{{",
+	//RightDelim:       "}}",
 }
 
 func init() {

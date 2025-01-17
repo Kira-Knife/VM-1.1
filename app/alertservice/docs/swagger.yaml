@@ -211,6 +211,24 @@ paths:
       summary: Get alert by ID
       tags:
       - alerts
+  /api/v1/alerts/groups:
+    get:
+      consumes:
+      - application/json
+      description: Возвращает список инцидентов с детализированной информацией, отсортированных
+        по времени начала
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/entity.Incident'
+            type: array
+      summary: Получить сгруппированные инциденты
+      tags:
+      - groups
   /api/v1/alerts/list:
     get:
       description: Вернет список алертов отсортированных по времени начиная с begin

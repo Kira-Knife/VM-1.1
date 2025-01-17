@@ -3,6 +3,7 @@ package usecase
 import (
 	"alertservice/internal/entity"
 	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 )
@@ -73,6 +74,7 @@ func (u *UseCase) IncomingAlerts(vm_alert_notif entity.VMAlertNotification) erro
 	// Преобразование в Alert
 	alerts, incidents := ConvertNotificationToEntities(vm_alert_notif)
 	u.logger.Debug("Успешная конвертация: %+v,%+v.", alerts, incidents)
+
 	ctx, _ := context.WithCancel(context.Background())
 	for i, alert := range alerts {
 		alertId, err := u.db.StoreAlert(ctx, alert) // сохранение алерта в базу
@@ -93,6 +95,24 @@ func (u *UseCase) IncomingAlerts(vm_alert_notif entity.VMAlertNotification) erro
 		if err != nil { // подправить обработку ошибки
 			u.logger.Error("u.db.StoreIncidentAlert: %w", err)
 			u.db.DeleteAlert(ctx, alertId)
+			continue
+		}
+
+		jsonAlert, err := json.Marshal(vm_alert_notif.VMAlerts[i])
+		if err != nil {
+			u.logger.Error("json.Marshal(vm_alert_notif.VMAlerts[i]): %w", err)
+			continue
+		}
+		vmAlertJsonID, err := u.db.InsertVMAlertJson(ctx, entity.VMAlertJson{
+			Alert: json.RawMessage(jsonAlert),
+		})
+
+		err = u.db.InsertVMAlertServAlert(ctx, entity.VMAlertServAlert{
+			AlertID:       alertId,
+			VMAlertJsonID: vmAlertJsonID,
+		})
+		if err != nil {
+			u.logger.Error("u.db.InsertVMAlertServAlert: %w", err)
 			continue
 		}
 	}
