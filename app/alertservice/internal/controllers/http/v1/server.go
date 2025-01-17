@@ -17,6 +17,8 @@ type Server struct {
 	router     *mux.Router
 	httpServer *http.Server
 	logger     *logger.Logger
+	certFile   string
+	keyFile    string
 }
 
 func New(cfg *config.Config, u *usecase.UseCase, l *logger.Logger) *Server {
@@ -30,7 +32,9 @@ func New(cfg *config.Config, u *usecase.UseCase, l *logger.Logger) *Server {
 			Addr:    ":" + cfg.HTTP.Port,
 			Handler: router,
 		},
-		logger: l,
+		logger:   l,
+		certFile: cfg.HTTP.CertFile,
+		keyFile:  cfg.HTTP.KeyFile,
 	}
 	s.routeRegistration()
 	return &s
@@ -38,7 +42,7 @@ func New(cfg *config.Config, u *usecase.UseCase, l *logger.Logger) *Server {
 
 func (s *Server) Run() error {
 	s.logger.Info("Сервер запущен : %s", s.url)
-	return s.httpServer.ListenAndServe()
+	return s.httpServer.ListenAndServeTLS(s.certFile, s.keyFile)
 }
 
 func (s *Server) Stop(ctx context.Context) error {

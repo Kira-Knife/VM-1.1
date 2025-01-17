@@ -23,7 +23,9 @@ type (
 
 	// HTTP -.
 	HTTP struct {
-		Port string `env-required:"true" yaml:"port" env:"HTTP_PORT"`
+		Port     string `env-required:"true" yaml:"port" env:"HTTP_PORT"`
+		CertFile string `yaml:"cert_file" env:"CERT_FILE"`
+		KeyFile  string `yaml:"key_file" env:"KEY_FILE"`
 	}
 
 	// Log -.

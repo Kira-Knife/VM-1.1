@@ -65,6 +65,15 @@ CREATE TABLE notifications (
   message TEXT NOT NULL  -- Message content of the notification
 );
 
+CREATE TABLE vm_alert (
+  id BIGSERIAL PRIMARY KEY,
+  alert JSON NOT NULL
+);
+
+CREATE TABLE vm_alert_serv_alert (
+  alert_id BIGINT NOT NULL REFERENCES alerts(alert_id),
+  vm_alert_id BIGINT NOT NULL REFERENCES vm_alert(id)
+);
 
 
 

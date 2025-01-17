@@ -4,6 +4,9 @@ app:
 
 http:
   port: '8787'
+  cert_file: 'cert/cert.pem'
+  key_file: 'cert/key.pem'
+
 
 logger:
   log_level: 'debug'
@@ -12,10 +15,3 @@ logger:
 postgres:
   pool_max: 2
   pg_url: "postgres://admin:admin@localhost:5432/vmalertservice?sslmode=disable"
-
-alert_statuses:
-  statuses:
-    - "Создано"
-    - "В работе"
-    - "Решено"
-    - "Отклонено"
