@@ -3,9 +3,18 @@ package usecase
 import (
 	"alertservice/internal/entity"
 	"context"
+	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"time"
+)
+
+const (
+	IncidentStateOpen       = 1
+	IncidentStateInProgress = 2
+	IncidentStateResolved   = 3
+	IncidentStateRejected   = 4
 )
 
 // ConvertNotificationToEntities преобразует VMAlertNotification в массивы Alert и Incident.
@@ -77,18 +86,25 @@ func (u *UseCase) IncomingAlerts(vm_alert_notif entity.VMAlertNotification) erro
 
 	ctx, _ := context.WithCancel(context.Background())
 	for i, alert := range alerts {
+		openedInсidentsId, err := u.db.GetOpenIncidentIDsByAlertName(ctx, alert.AlertName) // openedInсidentsId - либо 0, либо 1
+		var incidentID int64
+		if len(openedInсidentsId) == 0 || errors.Is(err, sql.ErrNoRows) { // если нет открытого инцидента по данному алерту, то создается инцидент
+			incidents[i].StatusID = IncidentStateOpen               // статус по умолчанию
+			incidentID, err = u.db.StoreIncident(ctx, incidents[i]) // Сохранение инцидента в базу
+			if err != nil {
+				u.logger.Error("u.db.StoreIncident(ctx, incidents[i]) - Incident sescription: %s - err: %v", incidents[i].Description, err)
+				u.db.DeleteAlert(ctx, incidentID)
+				continue
+			}
+		} else {
+			incidentID = openedInсidentsId[0] //
+		}
 		alertId, err := u.db.StoreAlert(ctx, alert) // сохранение алерта в базу
 		if err != nil {
 			u.logger.Error("u.db.StoreAlert(ctx, alert) - alert name: %s - err: %v", alert.AlertName, err)
 			continue
 		}
-		incidents[i].StatusID = 1                                // статус по умолчанию
-		incidentID, err := u.db.StoreIncident(ctx, incidents[i]) // Сохранение инцидента в базу
-		if err != nil {
-			u.logger.Error("u.db.StoreIncident(ctx, incidents[i]) - Incident sescription: %s - err: %v", incidents[i].Description, err)
-			u.db.DeleteAlert(ctx, alertId)
-			continue
-		}
+
 		err = u.db.StoreIncidentAlert(ctx,
 			entity.IncidentAlert{IncidentID: incidentID, AlertID: alertId},
 		)

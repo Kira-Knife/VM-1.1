@@ -22,7 +22,7 @@ CREATE TABLE incident_states (
 );
 
 INSERT INTO incident_states (name, description) VALUES
-('Created', ''),
+('Open', ''),
 ('In progress', ''),
 ('Resolved', ''),
 ('Rejected', '');

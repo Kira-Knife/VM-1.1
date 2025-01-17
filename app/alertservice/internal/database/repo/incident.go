@@ -1,10 +1,9 @@
 package repo
 
 import (
+	"alertservice/internal/entity"
 	"context"
 	"fmt"
-
-	"alertservice/internal/entity"
 
 	"github.com/Masterminds/squirrel"
 )
@@ -82,7 +81,7 @@ func (r *PostgresRepo) GetIncident(ctx context.Context, incidentID int64) (entit
 		Where(squirrel.Eq{"incident_id": incidentID}).
 		ToSql()
 	if err != nil {
-		return entity.Incident{}, fmt.Errorf("IncidentRepo - GetIncident - r.Builder: %w", err)
+		return entity.Incident{}, fmt.Errorf("GetIncident - r.Builder: %w", err)
 	}
 
 	var incident entity.Incident
@@ -95,7 +94,7 @@ func (r *PostgresRepo) GetIncident(ctx context.Context, incidentID int64) (entit
 		&incident.GeneratorURL,
 	)
 	if err != nil {
-		return entity.Incident{}, fmt.Errorf("IncidentRepo - GetIncident - r.Pool.QueryRow: %w", err)
+		return entity.Incident{}, fmt.Errorf("GetIncident - r.Pool.QueryRow: %w", err)
 	}
 
 	return incident, nil
@@ -158,4 +157,42 @@ func (r *PostgresRepo) GetListIncidents(ctx context.Context, begin, count int) (
 	}
 
 	return incidents, nil
+}
+
+func (r *PostgresRepo) GetOpenIncidentIDsByAlertName(ctx context.Context, alertName string) ([]int64, error) {
+	sql, args, err := r.db.Builder.
+		Select("i.incident_id").
+		From("incidents i").
+		Where("i.incident_id IN ("+
+			"SELECT ia.incident_id FROM incident_alerts ia WHERE ia.alert_id IN ("+
+			"SELECT a.alert_id FROM alerts a WHERE a.alert_name = ?))", alertName).
+		Where(squirrel.Or{
+			squirrel.Eq{"i.status_id": 1}, // Open
+			squirrel.Eq{"i.status_id": 2}, // In Progress
+		}).
+		ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("GetIncidentIDsByAlertName - r.Builder: %w", err)
+	}
+
+	rows, err := r.db.Pool.Query(ctx, sql, args...)
+	if err != nil {
+		return nil, fmt.Errorf("GetIncidentIDsByAlertName - r.db.QueryContext: %w", err)
+	}
+	defer rows.Close()
+
+	var incidentIDs []int64
+	for rows.Next() {
+		var incidentID int64
+		if err := rows.Scan(&incidentID); err != nil {
+			return nil, fmt.Errorf("GetIncidentIDsByAlertName - rows.Scan: %w", err)
+		}
+		incidentIDs = append(incidentIDs, incidentID)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("GetIncidentIDsByAlertName - rows.Err: %w", err)
+	}
+
+	return incidentIDs, nil
 }
