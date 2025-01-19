@@ -46,6 +46,45 @@ func (r *PostgresRepo) GetIncidents(ctx context.Context) ([]entity.Incident, err
 	return incidents, nil
 }
 
+func (r *PostgresRepo) GetIncidentsResponse(ctx context.Context) ([]entity.IncidentResponse, error) {
+	sql, args, err := r.db.Builder.
+		Select("i.incident_id, s.name AS severity, i.description, is2.name AS status, i.create_at, i.generator_url").
+		From("incidents i").
+		Join("severities s ON i.severity_id = s.id").
+		Join("incident_states is2 ON i.status_id = is2.id").
+		OrderBy("i.create_at DESC").
+		ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("IncidentRepo - GetIncidents - r.Builder: %w", err)
+	}
+
+	rows, err := r.db.Pool.Query(ctx, sql, args...)
+	if err != nil {
+		return nil, fmt.Errorf("IncidentRepo - GetIncidents - r.Pool.Query: %w", err)
+	}
+	defer rows.Close()
+
+	incidents := make([]entity.IncidentResponse, 0)
+
+	for rows.Next() {
+		var incident entity.IncidentResponse
+		err = rows.Scan(
+			&incident.IncidentID,
+			&incident.Severity,
+			&incident.Description,
+			&incident.Status,
+			&incident.CreateAt,
+			&incident.GeneratorURL,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("IncidentRepo - GetIncidents - rows.Scan: %w", err)
+		}
+		incidents = append(incidents, incident)
+	}
+
+	return incidents, nil
+}
+
 // StoreIncident inserts a new incident into the database and returns its ID.
 func (r *PostgresRepo) StoreIncident(ctx context.Context, incident entity.Incident) (int64, error) {
 	sql, args, err := r.db.Builder.
@@ -100,6 +139,34 @@ func (r *PostgresRepo) GetIncident(ctx context.Context, incidentID int64) (entit
 	return incident, nil
 }
 
+func (r *PostgresRepo) GetIncidentResponse(ctx context.Context, incidentID int64) (entity.IncidentResponse, error) {
+	sql, args, err := r.db.Builder.
+		Select("i.incident_id, s.name AS severity, i.description, is2.name AS status, i.create_at, i.generator_url").
+		From("incidents i").
+		Join("severities s ON i.severity_id = s.id").
+		Join("incident_states is2 ON i.status_id = is2.id").
+		Where(squirrel.Eq{"i.incident_id": incidentID}).
+		ToSql()
+	if err != nil {
+		return entity.IncidentResponse{}, fmt.Errorf("GetIncident - r.Builder: %w", err)
+	}
+
+	var incident entity.IncidentResponse
+	err = r.db.Pool.QueryRow(ctx, sql, args...).Scan(
+		&incident.IncidentID,
+		&incident.Severity,
+		&incident.Description,
+		&incident.Status,
+		&incident.CreateAt,
+		&incident.GeneratorURL,
+	)
+	if err != nil {
+		return entity.IncidentResponse{}, fmt.Errorf("GetIncident - r.Pool.QueryRow: %w", err)
+	}
+
+	return incident, nil
+}
+
 // UpdateIncidentStatus updates the status of an incident.
 func (r *PostgresRepo) UpdateIncidentStatus(ctx context.Context, incidentID int64, newStatusID int) error {
 	sql, args, err := r.db.Builder.
@@ -147,6 +214,47 @@ func (r *PostgresRepo) GetListIncidents(ctx context.Context, begin, count int) (
 			&incident.SeverityID,
 			&incident.Description,
 			&incident.StatusID,
+			&incident.CreateAt,
+			&incident.GeneratorURL,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("IncidentRepo - GetListIncidents - rows.Scan: %w", err)
+		}
+		incidents = append(incidents, incident)
+	}
+
+	return incidents, nil
+}
+
+func (r *PostgresRepo) GetListIncidentsResponse(ctx context.Context, begin, count int) ([]entity.IncidentResponse, error) {
+	sql, args, err := r.db.Builder.
+		Select("i.incident_id, s.name AS severity, i.description, is2.name AS status, i.create_at, i.generator_url").
+		From("incidents i").
+		Join("severities s ON i.severity_id = s.id").
+		Join("incident_states is2 ON i.status_id = is2.id").
+		OrderBy("i.create_at DESC").
+		Offset(uint64(begin)).
+		Limit(uint64(count)).
+		ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("IncidentRepo - GetListIncidents - r.Builder: %w", err)
+	}
+
+	rows, err := r.db.Pool.Query(ctx, sql, args...)
+	if err != nil {
+		return nil, fmt.Errorf("IncidentRepo - GetListIncidents - r.Pool.Query: %w", err)
+	}
+	defer rows.Close()
+
+	incidents := make([]entity.IncidentResponse, 0)
+
+	for rows.Next() {
+		var incident entity.IncidentResponse
+		err = rows.Scan(
+			&incident.IncidentID,
+			&incident.Severity,
+			&incident.Description,
+			&incident.Status,
 			&incident.CreateAt,
 			&incident.GeneratorURL,
 		)

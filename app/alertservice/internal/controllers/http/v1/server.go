@@ -42,7 +42,8 @@ func New(cfg *config.Config, u *usecase.UseCase, l *logger.Logger) *Server {
 
 func (s *Server) Run() error {
 	s.logger.Info("Сервер запущен : %s", s.url)
-	return s.httpServer.ListenAndServeTLS(s.certFile, s.keyFile)
+	// return s.httpServer.ListenAndServeTLS(s.certFile, s.keyFile) // https
+	return s.httpServer.ListenAndServe() // http
 }
 
 func (s *Server) Stop(ctx context.Context) error {

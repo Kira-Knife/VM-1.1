@@ -25,6 +25,7 @@ WORKDIR /app
 COPY --from=builder /app/config ./config
 COPY --from=builder /app/docs ./docs
 COPY --from=builder /app/alertservice alertservice
+COPY --from=builder /app//cert ./cert
 
 # Указываем команду для запуска приложения
 CMD ["./alertservice"]

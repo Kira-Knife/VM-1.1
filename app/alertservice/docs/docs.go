@@ -90,7 +90,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/entity.Incident"
+                                "$ref": "#/definitions/entity.GroupIncident"
                             }
                         }
                     }
@@ -204,7 +204,46 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/entity.Incident"
+                                "$ref": "#/definitions/entity.IncidentResponse"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/incidents/list": {
+            "get": {
+                "description": "Вернет список инцидентов отсортированных по времени начиная с begin в колличестве count",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "incidents"
+                ],
+                "summary": "Получение списка инцидентов",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Starting incident index",
+                        "name": "begin",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Number of incidents",
+                        "name": "count",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/entity.IncidentResponse"
                             }
                         }
                     }
@@ -234,7 +273,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/entity.Incident"
+                            "$ref": "#/definitions/entity.IncidentResponse"
                         }
                     }
                 }
@@ -374,7 +413,41 @@ const docTemplate = `{
                 }
             }
         },
-        "entity.Incident": {
+        "entity.GroupIncident": {
+            "type": "object",
+            "properties": {
+                "alert_count": {
+                    "type": "integer"
+                },
+                "create_at": {
+                    "type": "string"
+                },
+                "description": {
+                    "description": "sql.NullString",
+                    "type": "string"
+                },
+                "first_start_at": {
+                    "type": "string"
+                },
+                "generator_url": {
+                    "description": "sql.NullString",
+                    "type": "string"
+                },
+                "incident_id": {
+                    "type": "integer"
+                },
+                "last_start_at": {
+                    "type": "string"
+                },
+                "severity": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "entity.IncidentResponse": {
             "type": "object",
             "properties": {
                 "create_at": {
@@ -393,13 +466,13 @@ const docTemplate = `{
                     "description": "Unique identifier for each incident",
                     "type": "integer"
                 },
-                "severity_id": {
+                "severity": {
                     "description": "Level of criticality",
-                    "type": "integer"
+                    "type": "string"
                 },
-                "status_id": {
+                "status": {
                     "description": "Current status of the incident",
-                    "type": "integer"
+                    "type": "string"
                 }
             }
         },
@@ -548,8 +621,8 @@ var SwaggerInfo = &swag.Spec{
 	Description:      "AlertService",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
-	//LeftDelim:        "{{",
-	//RightDelim:       "}}",
+	// LeftDelim:        "{{",
+	// RightDelim:       "}}",
 }
 
 func init() {

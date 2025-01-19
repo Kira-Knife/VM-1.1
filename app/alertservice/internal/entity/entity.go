@@ -1,7 +1,6 @@
 package entity
 
 import (
-	"database/sql"
 	"encoding/json"
 	"time"
 )
@@ -66,6 +65,15 @@ type Incident struct {
 	GeneratorURL string    `db:"generator_url" json:"generator_url"` // URL of the incident generator
 }
 
+type IncidentResponse struct {
+	IncidentID   int64     `json:"incident_id"`                      // Unique identifier for each incident
+	Severity     string    `json:"severity"`                         // Level of criticality
+	Description  string    `db:"description" json:"description"`     // Detailed description of the incident
+	Status       string    `json:"status"`                           // Current status of the incident
+	CreateAt     time.Time `db:"create_at" json:"create_at"`         // Timestamp when the incident was created
+	GeneratorURL string    `db:"generator_url" json:"generator_url"` // URL of the incident generator
+}
+
 // IncidentState represents the state of an incident
 type IncidentState struct {
 	ID          int    `db:"id" json:"id"`                   // Unique identifier for each state
@@ -110,13 +118,13 @@ type VMAlertServAlert struct {
 }
 
 type GroupIncident struct {
-	IncidentID   int64          `json:"incident_id"`
-	Description  sql.NullString `json:"description"`
-	CreateAt     time.Time      `json:"create_at"`
-	GeneratorURL sql.NullString `json:"generator_url"`
-	Severity     string         `json:"severity"`
-	Status       string         `json:"status"`
-	AlertCount   int            `json:"alert_count"`
-	FirstStartAt time.Time      `json:"first_start_at"`
-	LastStartAt  time.Time      `json:"last_start_at"`
+	IncidentID   int64     `json:"incident_id"`
+	Description  string    `json:"description"` // sql.NullString
+	CreateAt     time.Time `json:"create_at"`
+	GeneratorURL string    `json:"generator_url"` // sql.NullString
+	Severity     string    `json:"severity"`
+	Status       string    `json:"status"`
+	AlertCount   int       `json:"alert_count"`
+	FirstStartAt time.Time `json:"first_start_at"`
+	LastStartAt  time.Time `json:"last_start_at"`
 }

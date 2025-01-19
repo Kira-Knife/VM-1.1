@@ -22,10 +22,10 @@ CREATE TABLE incident_states (
 );
 
 INSERT INTO incident_states (name, description) VALUES
-('Open', ''),
-('In progress', ''),
-('Resolved', ''),
-('Rejected', '');
+('Открыт', ''),
+('В работе', ''),
+('Решенный', ''),
+('Отклоненный', '');
 
 -- Severities table
 CREATE TABLE severities (
@@ -74,12 +74,4 @@ CREATE TABLE vm_alert_serv_alert (
   alert_id BIGINT NOT NULL REFERENCES alerts(alert_id),
   vm_alert_id BIGINT NOT NULL REFERENCES vm_alert(id)
 );
-
-
-
-
-
-
-
-
 

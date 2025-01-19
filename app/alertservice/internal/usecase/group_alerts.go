@@ -6,7 +6,7 @@ import (
 )
 
 // GetSortedIncidents возвращает отсортированный список инцидентов с детализированной информацией.
-func (u *UseCase) GetSortedIncidents(ctx context.Context) ([]entity.GroupIncident, error) {
+func (u *UseCase) GetGroupIncidents(ctx context.Context) ([]entity.GroupIncident, error) {
 	groupIncidents, err := u.db.GetIncidentsWithDetails(ctx)
 	if err != nil {
 		return nil, err
