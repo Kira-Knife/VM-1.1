@@ -252,10 +252,39 @@ paths:
       summary: Получить сгруппированные инциденты
       tags:
       - groups
+  /api/v1/alerts/groups/list:
+    get:
+      consumes:
+      - application/json
+      description: Возвращает список инцидентов с детализированной информацией, отсортированных
+        по времени начала. Начиная с begin в размере count.
+      parameters:
+      - description: Starting alert index
+        in: query
+        name: begin
+        required: true
+        type: integer
+      - description: Number of alerts
+        in: query
+        name: count
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/entity.GroupIncident'
+            type: array
+      summary: Получить сгруппированные инциденты
+      tags:
+      - groups
   /api/v1/alerts/list:
     get:
       description: Вернет список алертов отсортированных по времени начиная с begin
-        в колличестве count
+        в размере count
       parameters:
       - description: Starting alert index
         in: query
@@ -351,7 +380,7 @@ paths:
   /api/v1/incidents/list:
     get:
       description: Вернет список инцидентов отсортированных по времени начиная с begin
-        в колличестве count
+        в размере count
       parameters:
       - description: Starting incident index
         in: query

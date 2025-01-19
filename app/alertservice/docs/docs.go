@@ -97,9 +97,51 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/alerts/groups/list": {
+            "get": {
+                "description": "Возвращает список инцидентов с детализированной информацией, отсортированных по времени начала. Начиная с begin в размере count.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "groups"
+                ],
+                "summary": "Получить сгруппированные инциденты",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Starting alert index",
+                        "name": "begin",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Number of alerts",
+                        "name": "count",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/entity.GroupIncident"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/alerts/list": {
             "get": {
-                "description": "Вернет список алертов отсортированных по времени начиная с begin в колличестве count",
+                "description": "Вернет список алертов отсортированных по времени начиная с begin в размере count",
                 "produces": [
                     "application/json"
                 ],
@@ -213,7 +255,7 @@ const docTemplate = `{
         },
         "/api/v1/incidents/list": {
             "get": {
-                "description": "Вернет список инцидентов отсортированных по времени начиная с begin в колличестве count",
+                "description": "Вернет список инцидентов отсортированных по времени начиная с begin в размере count",
                 "produces": [
                     "application/json"
                 ],

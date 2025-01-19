@@ -55,7 +55,7 @@ func (s *Server) getAlerts(w http.ResponseWriter, r *http.Request) {
 }
 
 // @Summary Получение списка алертов
-// @Description Вернет список алертов отсортированных по времени начиная с begin в колличестве count
+// @Description Вернет список алертов отсортированных по времени начиная с begin в размере count
 // @Tags alerts
 // @Produce json
 // @Param begin query int true "Starting alert index"

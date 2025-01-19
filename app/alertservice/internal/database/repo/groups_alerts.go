@@ -107,3 +107,62 @@ func (r *PostgresRepo) GetIncidentsWithDetails(ctx context.Context) ([]entity.Gr
 
 	return incidents, nil
 }
+
+func (r *PostgresRepo) GetListIncidentsWithDetails(ctx context.Context, begin, count int) ([]entity.GroupIncident, error) {
+	// Создание подзапроса как строка
+	subquery, subargs, err := r.db.Builder.
+		Select("ia.incident_id, COUNT(a.alert_name) AS alert_count, MAX(a.starts_at) AS latest_start_at, MIN(a.starts_at) AS earliest_start_at").
+		From("incident_alerts ia").
+		Join("alerts a ON ia.alert_id = a.alert_id").
+		GroupBy("ia.incident_id").
+		ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("GetListIncidentsWithDetails - subquery Builder: %w", err)
+	}
+
+	sql, args, err := r.db.Builder.
+		Select("i.incident_id, i.description, i.create_at, i.generator_url, s.name AS severity, is2.name AS status, in12.alert_count, in12.latest_start_at, in12.earliest_start_at").
+		From("incidents i").
+		Join("severities s ON i.severity_id = s.id").
+		Join("incident_states is2 ON i.status_id = is2.id").
+		Join(fmt.Sprintf("(%s) AS in12 ON in12.incident_id = i.incident_id", subquery), subargs...).
+		OrderBy("in12.latest_start_at DESC").
+		Offset(uint64(begin)).
+		Limit(uint64(count)).
+		ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("GetListIncidentsWithDetails - r.Builder: %w", err)
+	}
+
+	rows, err := r.db.Pool.Query(ctx, sql, args...)
+	if err != nil {
+		return nil, fmt.Errorf("GetListIncidentsWithDetails - r.Pool.Query: %w", err)
+	}
+	defer rows.Close()
+
+	var incidents []entity.GroupIncident
+	for rows.Next() {
+		var incident entity.GroupIncident
+		err = rows.Scan(
+			&incident.IncidentID,
+			&incident.Description,
+			&incident.CreateAt,
+			&incident.GeneratorURL,
+			&incident.Severity,
+			&incident.Status,
+			&incident.AlertCount,
+			&incident.LastStartAt,
+			&incident.FirstStartAt,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("GetListIncidentsWithDetails - rows.Scan: %w", err)
+		}
+		incidents = append(incidents, incident)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("GetListIncidentsWithDetails - rows.Err: %w", err)
+	}
+
+	return incidents, nil
+}

@@ -100,7 +100,7 @@ func (s *Server) updateIncidentStatus(w http.ResponseWriter, r *http.Request) {
 }
 
 // @Summary Получение списка инцидентов
-// @Description Вернет список инцидентов отсортированных по времени начиная с begin в колличестве count
+// @Description Вернет список инцидентов отсортированных по времени начиная с begin в размере count
 // @Tags incidents
 // @Produce json
 // @Param begin query int true "Starting incident index"
