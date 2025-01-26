@@ -304,3 +304,22 @@ func (r *PostgresRepo) GetOpenIncidentIDsByAlertName(ctx context.Context, alertN
 
 	return incidentIDs, nil
 }
+
+func (r *PostgresRepo) GetCountOfAlertsForIncident(ctx context.Context, incidentID int64) (int64, error) {
+	sql, args, err := r.db.Builder.
+		Select("COUNT(*) AS alert_count").
+		From("incident_alerts ia").
+		Where("ia.incident_id = ?", incidentID).
+		ToSql()
+	if err != nil {
+		return 0, fmt.Errorf("GetCountOfAlertsForIncident - r.Builder: %w", err)
+	}
+
+	var alertCount int64
+	err = r.db.Pool.QueryRow(ctx, sql, args...).Scan(&alertCount)
+	if err != nil {
+		return 0, fmt.Errorf("GetCountOfAlertsForIncident - r.db.QueryRow: %w", err)
+	}
+
+	return alertCount, nil
+}

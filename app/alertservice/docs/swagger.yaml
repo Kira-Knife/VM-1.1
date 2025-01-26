@@ -377,6 +377,24 @@ paths:
       summary: Update an incident
       tags:
       - incidents
+  /api/v1/incidents/{incident_id}/alerts/count:
+    get:
+      description: Вернет количество алертов по данногому инциденту (на данный момент
+        у одного инцидента алерты с одним именем)
+      parameters:
+      - description: Incident ID
+        in: path
+        name: incident_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: Получение коли алертов для данного инцидента
+      tags:
+      - incidents
   /api/v1/incidents/list:
     get:
       description: Вернет список инцидентов отсортированных по времени начиная с begin

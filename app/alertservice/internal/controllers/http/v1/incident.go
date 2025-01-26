@@ -73,7 +73,7 @@ func (s *Server) getIncidentByID(w http.ResponseWriter, r *http.Request) {
 func (s *Server) updateIncidentStatus(w http.ResponseWriter, r *http.Request) {
 	// Извлечение incident_id из параметров маршрута
 	vars := mux.Vars(r)
-	incidentIDStr := vars["incidents_id"]                      // Получаем incident_id из параметров
+	incidentIDStr := vars["incident_id"]                       // Получаем incident_id из параметров
 	incidentID, err := strconv.ParseInt(incidentIDStr, 10, 64) // Преобразуем в int64
 	if err != nil {
 		http.Error(w, "Invalid incident ID", http.StatusBadRequest)
@@ -128,4 +128,30 @@ func (s *Server) getListIncidents(w http.ResponseWriter, r *http.Request) {
 	}
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(incidents)
+}
+
+// @Summary Получение количества алертов для данного инцидента
+// @Description Вернет количество алертов по данногому инциденту (на данный момент у одного инцидента алерты с одним именем)
+// @Tags incidents
+// @Produce json
+// @Param incident_id path int true "Incident ID"
+// @Success 200
+// @Router /api/v1/incidents/{incident_id}/alerts/count [get]
+func (s *Server) getCountOfAlertsForIncident(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	incidentIDStr := vars["incident_id"]                       // Получаем incident_id из параметров
+	incidentID, err := strconv.ParseInt(incidentIDStr, 10, 64) // Преобразуем в int64
+	if err != nil {
+		http.Error(w, "Invalid `incident_id`", http.StatusBadRequest)
+		return
+	}
+
+	alerts_count, err := s.u.GetCountOfAlertsForIncident(incidentID)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(err)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(alerts_count)
 }

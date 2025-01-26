@@ -345,6 +345,32 @@
                 }
             }
         },
+        "/api/v1/incidents/{incident_id}/alerts/count": {
+            "get": {
+                "description": "Вернет количество алертов по данногому инциденту (на данный момент у одного инцидента алерты с одним именем)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "incidents"
+                ],
+                "summary": "Получение коли алертов для данного инцидента",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Incident ID",
+                        "name": "incident_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
         "/api/v1/settings/interval": {
             "get": {
                 "description": "Retrieve the current interval setting",

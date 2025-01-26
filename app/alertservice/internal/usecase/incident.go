@@ -56,3 +56,13 @@ func (u *UseCase) GetListIncidents(begin, count int) ([]entity.IncidentResponse,
 	}
 	return incidents, nil
 }
+
+func (u *UseCase) GetCountOfAlertsForIncident(incidentID int64) (int64, error) {
+	if incidentID <= 0 {
+		return 0, fmt.Errorf("Invalid parameters: incidentID <= 0.")
+	}
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	count_alerts, err := u.db.GetCountOfAlertsForIncident(ctx, incidentID)
+	return count_alerts, err
+}
