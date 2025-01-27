@@ -21,11 +21,11 @@ CREATE TABLE incident_states (
   description TEXT  -- Detailed description of the state
 );
 
-INSERT INTO incident_states (name, description) VALUES
-('Открыт', ''),
-('В работе', ''),
-('Решенный', ''),
-('Отклоненный', '');
+INSERT INTO incident_states (id, name, description) VALUES
+(1, 'Открыт', ''),
+(2, 'В работе', ''),
+(3, 'Решенный', ''),
+(4, 'Отклоненный', '');
 
 -- Severities table
 CREATE TABLE severities (
@@ -75,3 +75,35 @@ CREATE TABLE vm_alert_serv_alert (
   vm_alert_id BIGINT NOT NULL REFERENCES vm_alert(id)
 );
 
+-- Добавление заглушки для Jira
+CREATE TABLE task_status (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(50) NOT NULL UNIQUE
+);
+
+INSERT INTO task_status (id, name) VALUES
+(1, 'To Do'),
+(2, 'In Progress'),
+(3, 'Done'),
+(4, 'Canceled');
+
+CREATE TABLE incident_states_task_status (
+  task_ststus_id INT NOT NULL REFERENCES task_status(id),
+  incident_states_id INT NOT NULL REFERENCES incident_states(id),
+);
+
+INSERT INTO incident_states_task_status (task_ststus_id, incident_states_id) VALUES
+(1, 1),
+(2, 2),
+(3, 3),
+(4, 4);
+
+CREATE TABLE tasks (
+    task_id BIGSERIAL PRIMARY KEY, -- Уникальный идентификатор задачи в нашей системе
+    task_main_id UUID UNIQUE, -- Уникальный идентификатор задачи в системе источнике (Jira)
+    task_title TEXT, -- Сочетание акронима проекта/пространства и номера задачи в системе источнике
+    task_status_id INT NOT NULL REFERENCES task_status(id), -- Статус задачи (To Do, In Progress, Done, Canceled)
+    assigned VARCHAR(250), -- Назначенный исполнитель (логин)
+    owner VARCHAR(250), -- Наблюдатель  (логин)
+    incident_id BIGINT NOT NULL REFERENCES incidents(incident_id)-- Идентификатор инцидента
+);
