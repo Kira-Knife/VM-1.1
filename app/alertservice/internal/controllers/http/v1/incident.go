@@ -2,6 +2,7 @@ package v1
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -68,15 +69,25 @@ func (s *Server) getIncidentByID(w http.ResponseWriter, r *http.Request) {
 // @Tags incidents
 // @Param incident_id path int true "Incident ID"
 // @Param incident_status body Status true "New status"
-// @Success 204
+// @Success 200
+// @Failure 400 {object} map[string]string "Invalid incident ID or request body"
+// @Failure 500 {object} map[string]string "Internal server error"
 // @Router /api/v1/incidents/{incident_id} [patch]
 func (s *Server) updateIncidentStatus(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PATCH, PUT, DELETE, OPTIONS")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+
+	s.logger.Debug("Run updateIncidentStatus")
 	// Извлечение incident_id из параметров маршрута
 	vars := mux.Vars(r)
 	incidentIDStr := vars["incident_id"]                       // Получаем incident_id из параметров
 	incidentID, err := strconv.ParseInt(incidentIDStr, 10, 64) // Преобразуем в int64
 	if err != nil {
-		http.Error(w, "Invalid incident ID", http.StatusBadRequest)
+		err = fmt.Errorf("Invalid incident ID: %w", err)
+		s.logger.Error(err)
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
 		return
 	}
 
@@ -84,19 +95,24 @@ func (s *Server) updateIncidentStatus(w http.ResponseWriter, r *http.Request) {
 	var requestBody Status
 
 	if err := json.NewDecoder(r.Body).Decode(&requestBody); err != nil {
-		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		err = fmt.Errorf("Invalid request body: %w", err)
+		s.logger.Error(err)
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
 		return
 	}
-
+	s.logger.Debug("Вызов метода UpdateIncidentStatus")
 	// Вызов метода UpdateIncidentStatus
 	err = s.u.UpdateIncidentStatus(incidentID, requestBody.NewStatus)
 	if err != nil {
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		s.logger.Error(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
 		return
 	}
 
 	// Успешное обновление статуса
-	w.WriteHeader(http.StatusNoContent) // 204 No Content
+	w.WriteHeader(http.StatusOK) // 200 No Content
 }
 
 // @Summary Получение списка инцидентов

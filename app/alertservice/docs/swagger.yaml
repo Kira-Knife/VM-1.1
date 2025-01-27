@@ -372,8 +372,20 @@ paths:
         schema:
           $ref: '#/definitions/v1.Status'
       responses:
-        "204":
-          description: No Content
+        "200":
+          description: OK
+        "400":
+          description: Invalid incident ID or request body
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
       summary: Update an incident
       tags:
       - incidents
@@ -392,7 +404,7 @@ paths:
       responses:
         "200":
           description: OK
-      summary: Получение коли алертов для данного инцидента
+      summary: Получение количества алертов для данного инцидента
       tags:
       - incidents
   /api/v1/incidents/list:

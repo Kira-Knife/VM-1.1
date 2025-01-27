@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/rs/cors"
 )
 
 type Server struct {
@@ -41,7 +42,17 @@ func New(cfg *config.Config, u *usecase.UseCase, l *logger.Logger) *Server {
 }
 
 func (s *Server) Run() error {
+	corsOptions := cors.New(cors.Options{
+		AllowedOrigins:   []string{"*"}, // Allow all origins
+		AllowedMethods:   []string{"GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"},
+		AllowedHeaders:   []string{"Content-Type", "Authorization"},
+		AllowCredentials: true,
+	})
+	handler := corsOptions.Handler(s.router)
+	s.httpServer.Handler = handler
+
 	s.logger.Info("Сервер запущен : %s", s.url)
+
 	// return s.httpServer.ListenAndServeTLS(s.certFile, s.keyFile) // https
 	return s.httpServer.ListenAndServe() // http
 }

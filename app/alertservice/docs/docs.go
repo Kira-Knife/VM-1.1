@@ -345,8 +345,26 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {
-                    "204": {
-                        "description": "No Content"
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Invalid incident ID or request body",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
                     }
                 }
             }
@@ -360,7 +378,7 @@ const docTemplate = `{
                 "tags": [
                     "incidents"
                 ],
-                "summary": "Получение коли алертов для данного инцидента",
+                "summary": "Получение количества алертов для данного инцидента",
                 "parameters": [
                     {
                         "type": "integer",

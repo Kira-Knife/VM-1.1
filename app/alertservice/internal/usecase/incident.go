@@ -4,6 +4,7 @@ import (
 	"alertservice/internal/entity"
 	"context"
 	"fmt"
+	"strings"
 )
 
 // GetAlerts - Вернуть все Alert
@@ -34,9 +35,26 @@ func (u *UseCase) GetIncident(incidentID int64) (entity.IncidentResponse, error)
 func (u *UseCase) UpdateIncidentStatus(incidentID int64, newStatus string) error {
 	ctx, _ := context.WithCancel(context.Background())
 	// err := u.db.UpdateIncidentStatus(ctx, incidentID, newStatus)
-	st, _ := u.db.GetIncidentStates(ctx)
-	newStatusID := st[0].ID
-	err := u.db.UpdateIncidentStatus(ctx, incidentID, newStatusID)
+	st, err := u.db.GetIncidentStates(ctx)
+	if err != nil {
+		return err
+	}
+	newStatusID := -1
+	for _, status := range st {
+		if status.Name == newStatus {
+			newStatusID = status.ID
+			break
+		}
+	}
+	if newStatusID < 0 {
+		allStatusNames := make([]string, 0, len(st))
+		for _, s := range st {
+			allStatusNames = append(allStatusNames, s.Name)
+		}
+		return fmt.Errorf("Статус '%s' не валиден. Используйте статусы из списка: %s.", newStatus, strings.Join(allStatusNames, ", "))
+	}
+
+	err = u.db.UpdateIncidentStatus(ctx, incidentID, newStatusID)
 	if err != nil {
 		u.logger.Error("UpdateIncidentStatus - incidentID %d - %v", incidentID, err)
 		return fmt.Errorf("UpdateIncidentStatus - %w", err)

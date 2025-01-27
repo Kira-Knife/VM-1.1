@@ -15,7 +15,7 @@ func (s *Server) routeRegistration() {
 	apiRouter.Use(s.enableCORS) // включение CORS заголовков
 
 	// POST /api/v1/alerts
-	apiRouter.HandleFunc("/alerts", s.incomingAlerts).Methods(http.MethodPost) // входящие алерты
+	apiRouter.HandleFunc("/alerts", s.incomingAlerts).Methods(http.MethodPost, http.MethodOptions) // входящие алерты
 
 	// AlertFrontendApi
 	apiRouter.HandleFunc("/alerts", s.getAlerts).Methods(http.MethodGet)                      // -
@@ -26,9 +26,9 @@ func (s *Server) routeRegistration() {
 	apiRouter.HandleFunc("/alerts/groups", s.GetGroupedIncidents).Methods(http.MethodGet)
 	apiRouter.HandleFunc("/alerts/groups/list", s.GetListGroupedIncidents).Methods(http.MethodGet)
 
-	apiRouter.HandleFunc("/incidents", s.getIncidents).Methods(http.MethodGet)                                 // -
-	apiRouter.HandleFunc("/incidents/{incidents_id:[0-9]+}", s.getIncidentByID).Methods(http.MethodGet)        // -
-	apiRouter.HandleFunc("/incidents/{incidents_id:[0-9]+}", s.updateIncidentStatus).Methods(http.MethodPatch) // -
+	apiRouter.HandleFunc("/incidents", s.getIncidents).Methods(http.MethodGet)                                                    // -
+	apiRouter.HandleFunc("/incidents/{incidents_id:[0-9]+}", s.getIncidentByID).Methods(http.MethodGet)                           // -
+	apiRouter.HandleFunc("/incidents/{incident_id:[0-9]+}", s.updateIncidentStatus).Methods(http.MethodPatch, http.MethodOptions) // -
 	apiRouter.HandleFunc("/incidents/list", s.getListIncidents).Methods(http.MethodGet)
 	apiRouter.HandleFunc("/incidents/{incident_id:[0-9]+}/alerts/count", s.getCountOfAlertsForIncident).Methods(http.MethodGet)
 
