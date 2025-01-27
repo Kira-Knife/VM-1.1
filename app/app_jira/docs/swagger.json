@@ -1,0 +1,31 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "app_jira",
+        "title": "app_jira",
+        "termsOfService": "http://swagger.io/terms/",
+        "contact": {},
+        "version": "1.0"
+    },
+    "host": "localhost:8786",
+    "basePath": "/",
+    "paths": {
+        "/api/v1/temp": {
+            "post": {
+                "description": "Temp",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "temp"
+                ],
+                "summary": "Temp",
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        }
+    }
+}

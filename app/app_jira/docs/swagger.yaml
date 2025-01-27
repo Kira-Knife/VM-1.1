@@ -1,0 +1,21 @@
+basePath: /
+host: localhost:8786
+info:
+  contact: {}
+  description: app_jira
+  termsOfService: http://swagger.io/terms/
+  title: app_jira
+  version: "1.0"
+paths:
+  /api/v1/temp:
+    post:
+      description: Temp
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: Temp
+      tags:
+      - temp
+swagger: "2.0"

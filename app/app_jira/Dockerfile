@@ -1,0 +1,33 @@
+# Этап сборки
+FROM golang:1.23 AS builder
+
+# Установка рабочей директории
+WORKDIR /app
+
+# Копируем go.mod и go.sum для кэширования зависимостей
+COPY go.mod go.sum ./
+RUN go mod download
+
+# Копируем все файлы приложения
+COPY . .
+
+# Компилируем приложение
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o app_jira main.go
+
+# Этап выполнения
+FROM alpine:latest
+
+# Установка необходимых библиотек
+RUN apk --no-cache add ca-certificates
+
+# Копируем скомпилированное приложение из этапа сборaки
+WORKDIR /app
+COPY --from=builder /app/config ./config
+COPY --from=builder /app/docs ./docs
+COPY --from=builder /app/app_jira app_jira
+
+# Указываем команду для запуска приложения
+CMD ["./app_jira"]
+
+# Указываем порт, который будет использовать приложение
+EXPOSE 8786
