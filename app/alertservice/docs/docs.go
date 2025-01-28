@@ -18,14 +18,14 @@ const docTemplate = `{
     "paths": {
         "/api/v1/alerts": {
             "get": {
-                "description": "Retrieve a list of alerts",
+                "description": "Вернет массив всех алертов, отсортированных по дате (по невозрастанию)",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "alerts"
                 ],
-                "summary": "Get all alerts",
+                "summary": "Получение всех алертов",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -35,11 +35,17 @@ const docTemplate = `{
                                 "$ref": "#/definitions/entity.Alert"
                             }
                         }
+                    },
+                    "500": {
+                        "description": "Ошибка получения данных",
+                        "schema": {
+                            "type": "string"
+                        }
                     }
                 }
             },
             "post": {
-                "description": "ппринимает алерты от VM и сохраняет их в базу с дальнейшем уведомлением",
+                "description": "Принимает уведомления об алертах (алерты) от VM с их дальнейшей обработкой",
                 "consumes": [
                     "application/json"
                 ],
@@ -49,10 +55,10 @@ const docTemplate = `{
                 "tags": [
                     "alerts"
                 ],
-                "summary": "принимает алерты от VM",
+                "summary": "Обработка входящих от VM алертов",
                 "parameters": [
                     {
-                        "description": "уведомление об алертах",
+                        "description": "Json структура уведомления об алертах системы VM",
                         "name": "notification",
                         "in": "body",
                         "required": true,
@@ -63,9 +69,18 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Ошибка в теле запроса",
                         "schema": {
-                            "type": "int"
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Ошибка обработки алерта",
+                        "schema": {
+                            "type": "string"
                         }
                     }
                 }
@@ -152,14 +167,14 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "Starting alert index",
+                        "description": "Начальный индекс",
                         "name": "begin",
                         "in": "query",
                         "required": true
                     },
                     {
                         "type": "integer",
-                        "description": "Number of alerts",
+                        "description": "Колличество получаемых алертов",
                         "name": "count",
                         "in": "query",
                         "required": true
@@ -174,20 +189,32 @@ const docTemplate = `{
                                 "$ref": "#/definitions/entity.Alert"
                             }
                         }
+                    },
+                    "400": {
+                        "description": "Недопустимые параметры",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Ошибка получения данных",
+                        "schema": {
+                            "type": "string"
+                        }
                     }
                 }
             }
         },
         "/api/v1/alerts/{alert_id}": {
             "get": {
-                "description": "Retrieve an alert by its ID",
+                "description": "Вернет алерт по указанному ID",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "alerts"
                 ],
-                "summary": "Get alert by ID",
+                "summary": "Получение алерта по ID",
                 "parameters": [
                     {
                         "type": "integer",
@@ -202,6 +229,18 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/entity.Alert"
+                        }
+                    },
+                    "400": {
+                        "description": "Недопустимые параметры",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Ошибка получения данных",
+                        "schema": {
+                            "type": "string"
                         }
                     }
                 }

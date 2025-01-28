@@ -3,32 +3,37 @@ package v1
 import (
 	"alertservice/internal/entity"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 
 	"github.com/gorilla/mux"
 )
 
-// incomingAlerts хендлер получения входящих от VM алертов
-// @Summary принимает алерты от VM
-// @Description ппринимает алерты от VM и сохраняет их в базу с дальнейшем уведомлением
+// @Summary Обработка входящих от VM алертов
+// @Description Принимает уведомления об алертах (алерты) от VM с их дальнейшей обработкой
 // @Tags alerts
 // @Accept json
 // @Produce json
-// @Param notification body entity.VMAlertNotification true "уведомление об алертах"
-// @Success 200 {int} http.StatusOK
+// @Param notification body entity.VMAlertNotification true "Json структура уведомления об алертах системы VM"
+// @Success 200
+// @Failure 400 {string} string "Ошибка в теле запроса"
+// @Failure 500 {string} string "Ошибка обработки алерта"
 // @Router /api/v1/alerts [post]
 func (s *Server) incomingAlerts(w http.ResponseWriter, r *http.Request) {
 	s.logger.Debug("incomingAlerts")
+
 	var notification entity.VMAlertNotification
 	if err := json.NewDecoder(r.Body).Decode(&notification); err != nil {
-		http.Error(w, "Invalid request payload", http.StatusBadRequest)
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(fmt.Sprintf("Ошибка в теле запроса: %v", err)))
 		return
 	}
 
 	// Обрабатываем полученные алерты
 	if err := s.u.IncomingAlerts(notification); err != nil {
-		http.Error(w, "Alert processing error", http.StatusInternalServerError)
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(fmt.Sprintf("Ошибка обработки алертов: %v", err)))
 		return
 	}
 
@@ -36,84 +41,99 @@ func (s *Server) incomingAlerts(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-// @Summary Get all alerts
-// @Description Retrieve a list of alerts
+// @Summary Получение всех алертов
+// @Description Вернет массив всех алертов, отсортированных по дате (по невозрастанию)
 // @Tags alerts
 // @Produce json
 // @Success 200 {array} entity.Alert
+// @Failure 500 {string} string "Ошибка получения данных"
 // @Router /api/v1/alerts [get]
 func (s *Server) getAlerts(w http.ResponseWriter, r *http.Request) {
-	// Handler logic
 	alerts, err := s.u.GetAlerts()
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(err)
-	} else {
-		w.WriteHeader(http.StatusAccepted)
-		json.NewEncoder(w).Encode(alerts)
+		w.Write([]byte(fmt.Sprintf("Ошибка получения данных: %v.", err)))
+		return
 	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(alerts)
 }
 
 // @Summary Получение списка алертов
 // @Description Вернет список алертов отсортированных по времени начиная с begin в размере count
 // @Tags alerts
 // @Produce json
-// @Param begin query int true "Starting alert index"
-// @Param count query int true "Number of alerts"
+// @Param begin query int true "Начальный индекс"
+// @Param count query int true "Колличество получаемых алертов"
 // @Success 200 {array} entity.Alert
+// @Failure 400 {string} string "Недопустимые параметры"
+// @Failure 500 {string} string "Ошибка получения данных"
 // @Router /api/v1/alerts/list [get]
 func (s *Server) getListAlerts(w http.ResponseWriter, r *http.Request) {
 	begin, err := strconv.Atoi(r.URL.Query().Get("begin"))
 	if err != nil || begin < 0 {
-		http.Error(w, "Invalid parameter begin", http.StatusBadRequest)
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(fmt.Sprintf("Недопустимый параметр `begin` (begin >= 0): %v.", err)))
 		return
 	}
 
 	count, err := strconv.Atoi(r.URL.Query().Get("count"))
 	if err != nil || count <= 0 {
-		http.Error(w, "Invalid parameter count", http.StatusBadRequest)
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(fmt.Sprintf("Недопустимый параметр `count` (count > 0): %v.", err)))
 		return
 	}
 
 	alerts, err := s.u.GetListAlerts(begin, count)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(fmt.Sprintf("Ошибка получения списка алертов: %v.", err)))
 		json.NewEncoder(w).Encode(err)
 		return
 	}
+
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(alerts)
 }
 
-// @Summary Get alert by ID
-// @Description Retrieve an alert by its ID
+// @Summary Получение алерта по ID
+// @Description Вернет алерт по указанному ID
 // @Tags alerts
 // @Produce json
 // @Param alert_id path int true "Alert ID"
 // @Success 200 {object} entity.Alert
+// @Failure 400 {string} string "Недопустимые параметры"
+// @Failure 500 {string} string "Ошибка получения данных"
 // @Router /api/v1/alerts/{alert_id} [get]
 func (s *Server) getAlertByID(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	alertIDStr := vars["alert_id"]                       // Получаем alert_id из параметров
 	alertID, err := strconv.ParseInt(alertIDStr, 10, 64) // Преобразуем в int64
-	if err != nil {
-		http.Error(w, "Invalid alert ID", http.StatusBadRequest)
+	if err != nil || alertID < 0 {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(fmt.Sprintf("Некорректный параметр ID (int64 > 0): %v.", err)))
 		return
 	}
 
 	// Вызов метода GetAlert
 	alert, err := s.u.GetAlert(alertID)
 	if err != nil {
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(fmt.Sprintf("Ошибка получения алерта: %v.", err)))
 		return
 	}
 
 	// Установка заголовка Content-Type
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
 
 	// Возврат JSON
 	if err := json.NewEncoder(w).Encode(alert); err != nil {
-		http.Error(w, "Failed to encode response", http.StatusInternalServerError)
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(fmt.Sprintf("Failed to encode response: %v.", err)))
+	} else {
+		w.WriteHeader(http.StatusOK)
 	}
 }

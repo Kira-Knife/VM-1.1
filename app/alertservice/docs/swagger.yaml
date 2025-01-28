@@ -181,7 +181,7 @@ info:
 paths:
   /api/v1/alerts:
     get:
-      description: Retrieve a list of alerts
+      description: Вернет массив всех алертов, отсортированных по дате (по невозрастанию)
       produces:
       - application/json
       responses:
@@ -191,15 +191,20 @@ paths:
             items:
               $ref: '#/definitions/entity.Alert'
             type: array
-      summary: Get all alerts
+        "500":
+          description: Ошибка получения данных
+          schema:
+            type: string
+      summary: Получение всех алертов
       tags:
       - alerts
     post:
       consumes:
       - application/json
-      description: ппринимает алерты от VM и сохраняет их в базу с дальнейшем уведомлением
+      description: Принимает уведомления об алертах (алерты) от VM с их дальнейшей
+        обработкой
       parameters:
-      - description: уведомление об алертах
+      - description: Json структура уведомления об алертах системы VM
         in: body
         name: notification
         required: true
@@ -210,14 +215,20 @@ paths:
       responses:
         "200":
           description: OK
+        "400":
+          description: Ошибка в теле запроса
           schema:
-            type: int
-      summary: принимает алерты от VM
+            type: string
+        "500":
+          description: Ошибка обработки алерта
+          schema:
+            type: string
+      summary: Обработка входящих от VM алертов
       tags:
       - alerts
   /api/v1/alerts/{alert_id}:
     get:
-      description: Retrieve an alert by its ID
+      description: Вернет алерт по указанному ID
       parameters:
       - description: Alert ID
         in: path
@@ -231,7 +242,15 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/entity.Alert'
-      summary: Get alert by ID
+        "400":
+          description: Недопустимые параметры
+          schema:
+            type: string
+        "500":
+          description: Ошибка получения данных
+          schema:
+            type: string
+      summary: Получение алерта по ID
       tags:
       - alerts
   /api/v1/alerts/groups:
@@ -286,12 +305,12 @@ paths:
       description: Вернет список алертов отсортированных по времени начиная с begin
         в размере count
       parameters:
-      - description: Starting alert index
+      - description: Начальный индекс
         in: query
         name: begin
         required: true
         type: integer
-      - description: Number of alerts
+      - description: Колличество получаемых алертов
         in: query
         name: count
         required: true
@@ -305,6 +324,14 @@ paths:
             items:
               $ref: '#/definitions/entity.Alert'
             type: array
+        "400":
+          description: Недопустимые параметры
+          schema:
+            type: string
+        "500":
+          description: Ошибка получения данных
+          schema:
+            type: string
       summary: Получение списка алертов
       tags:
       - alerts
