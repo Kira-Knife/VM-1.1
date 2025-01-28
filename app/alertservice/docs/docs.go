@@ -374,7 +374,7 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "description": "New status",
+                        "description": "Новый статус. Используйте статусы из списка: Открыт, В работе, Решенный, Отклоненный.",
                         "name": "incident_status",
                         "in": "body",
                         "required": true,
@@ -729,7 +729,8 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "status": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "Открыт"
                 }
             }
         }
@@ -738,7 +739,7 @@ const docTemplate = `{
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "1.0",
+	Version:          "2.0",
 	Host:             "localhost:8787",
 	BasePath:         "/",
 	Schemes:          []string{},
@@ -746,8 +747,8 @@ var SwaggerInfo = &swag.Spec{
 	Description:      "AlertService",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
-	// LeftDelim:        "{{",
-	// RightDelim:       "}}",
+	//LeftDelim:        "{{",
+	//RightDelim:       "}}",
 }
 
 func init() {

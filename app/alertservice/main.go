@@ -17,7 +17,7 @@ import (
 )
 
 // @title           AlertService
-// @version         1.0
+// @version         2.0
 // @description     AlertService
 // @termsOfService  http://swagger.io/terms/
 
@@ -30,9 +30,12 @@ func main() {
 		fmt.Println(err)
 		return
 	}
+
+	// docs.SwaggerInfo.Host = cfg.HTTP.host
+
 	pg, err := postgres.New(cfg.PG.URL, postgres.MaxPoolSize(cfg.PG.PoolMax))
 	if err != nil {
-		//log.Fatal(fmt.Errorf("app - Run - postgres.New: %w", err))
+		log.Fatal(fmt.Errorf("app - Run - postgres.New: %w", err))
 		fmt.Println(err)
 		return
 	}

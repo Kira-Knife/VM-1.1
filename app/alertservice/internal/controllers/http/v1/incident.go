@@ -10,7 +10,7 @@ import (
 )
 
 type Status struct {
-	NewStatus string `json:"status"`
+	NewStatus string `json:"status" example:"Открыт"`
 }
 
 // @Summary Get all incidents
@@ -68,16 +68,12 @@ func (s *Server) getIncidentByID(w http.ResponseWriter, r *http.Request) {
 // @Description Update an existing incident
 // @Tags incidents
 // @Param incident_id path int true "Incident ID"
-// @Param incident_status body Status true "New status"
+// @Param incident_status body Status true "Новый статус. Используйте статусы из списка: Открыт, В работе, Решенный, Отклоненный."
 // @Success 200
 // @Failure 400 {object} map[string]string "Invalid incident ID or request body"
 // @Failure 500 {object} map[string]string "Internal server error"
 // @Router /api/v1/incidents/{incident_id} [patch]
 func (s *Server) updateIncidentStatus(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PATCH, PUT, DELETE, OPTIONS")
-	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
-
 	s.logger.Debug("Run updateIncidentStatus")
 	// Извлечение incident_id из параметров маршрута
 	vars := mux.Vars(r)

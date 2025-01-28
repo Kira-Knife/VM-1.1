@@ -5,7 +5,7 @@
         "title": "AlertService",
         "termsOfService": "http://swagger.io/terms/",
         "contact": {},
-        "version": "1.0"
+        "version": "2.0"
     },
     "host": "localhost:8787",
     "basePath": "/",
@@ -368,7 +368,7 @@
                         "required": true
                     },
                     {
-                        "description": "New status",
+                        "description": "Новый статус. Используйте статусы из списка: Открыт, В работе, Решенный, Отклоненный.",
                         "name": "incident_status",
                         "in": "body",
                         "required": true,
@@ -723,7 +723,8 @@
             "type": "object",
             "properties": {
                 "status": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "Открыт"
                 }
             }
         }

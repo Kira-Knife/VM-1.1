@@ -169,6 +169,7 @@ definitions:
   v1.Status:
     properties:
       status:
+        example: Открыт
         type: string
     type: object
 host: localhost:8787
@@ -177,7 +178,7 @@ info:
   description: AlertService
   termsOfService: http://swagger.io/terms/
   title: AlertService
-  version: "1.0"
+  version: "2.0"
 paths:
   /api/v1/alerts:
     get:
@@ -392,7 +393,8 @@ paths:
         name: incident_id
         required: true
         type: integer
-      - description: New status
+      - description: 'Новый статус. Используйте статусы из списка: Открыт, В работе,
+          Решенный, Отклоненный.'
         in: body
         name: incident_status
         required: true
