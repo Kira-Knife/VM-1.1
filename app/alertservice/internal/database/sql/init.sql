@@ -82,14 +82,14 @@ CREATE TABLE task_status (
 );
 
 INSERT INTO task_status (id, name) VALUES
-(1, 'To Do'),
-(2, 'In Progress'),
-(3, 'Done'),
-(4, 'Canceled');
+(1, 'Открыт'),
+(2, 'В работе'),
+(3, 'Решенный'),
+(4, 'Отклоненный');
 
 CREATE TABLE incident_states_task_status (
   task_ststus_id INT NOT NULL REFERENCES task_status(id),
-  incident_states_id INT NOT NULL REFERENCES incident_states(id),
+  incident_states_id INT NOT NULL REFERENCES incident_states(id)
 );
 
 INSERT INTO incident_states_task_status (task_ststus_id, incident_states_id) VALUES

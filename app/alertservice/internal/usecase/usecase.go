@@ -6,6 +6,9 @@ import (
 	"alertservice/pkg/logger"
 )
 
+type DBInterf interface {
+}
+
 type UseCase struct {
 	db     *repo.PostgresRepo
 	logger *logger.Logger
@@ -17,4 +20,3 @@ func New(cfg *config.Config, db *repo.PostgresRepo, l *logger.Logger) *UseCase {
 		logger: l,
 	}
 }
-

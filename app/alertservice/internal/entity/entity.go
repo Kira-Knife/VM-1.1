@@ -123,6 +123,9 @@ type GroupIncident struct {
 	CreateAt     time.Time `json:"create_at"`
 	GeneratorURL string    `json:"generator_url"` // sql.NullString
 	Severity     string    `json:"severity"`
+	Job          string    `json:"job"`      // Job name, e.g., node_exporter, kafka_exporter (экспортер)
+	Service      string    `json:"service"`  // Arbitrary label for service, can be null
+	Instance     string    `json:"instance"` // хост (Grafana) нужно ещё посмотреть на это
 	Status       string    `json:"status"`
 	AlertCount   int       `json:"alert_count"`
 	FirstStartAt time.Time `json:"first_start_at"`

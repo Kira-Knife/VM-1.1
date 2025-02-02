@@ -1,118 +1,72 @@
 package repo
 
-/*
 import (
-	"context"
-	"testing"
-	"time"
-
-	"alertservice/internal/entity"
+	"alertservice/config"
 	"alertservice/pkg/logger"
 	"alertservice/pkg/postgres"
-
-	"github.com/jackc/pgx/v4/pgxpool"
-	"github.com/stretchr/testify/assert"
+	"fmt"
+	"log"
+	"testing"
 )
 
-var testPool *pgxpool.Pool
-var testRepo *PostgresRepo
-
-func setup() {
+func TestMain(m *testing.M) {
 	var err error
-	testPool, err = pgxpool.Connect(context.Background(), "postgres://admin:admin@localhost:5432/vmalertservice?sslmode=disable")
+
+	cfg, err := config.NewConfig()
 	if err != nil {
-		panic(err)
+		fmt.Println(err)
+		return
 	}
 
-	// Инициализация репозитория
-	testRepo = New(&postgres.Postgres{Pool: testPool}, logger.New("debug"))
+	// docs.SwaggerInfo.Host = cfg.HTTP.host
 
-	// Автоматическая миграция для создания таблиц
-	testRepo.AutoMigrate()
-}
+	pg, err := postgres.New(cfg.PG.URL, postgres.MaxPoolSize(cfg.PG.PoolMax))
+	if err != nil {
+		log.Fatal(fmt.Errorf("app - Run - postgres.New: %w", err))
+		fmt.Println(err)
+		return
+	}
+	defer pg.Close()
 
-func teardown() {
-	// Удаление таблиц после тестов
-	_, _ = testPool.Exec(context.Background(), "DROP TABLE IF EXISTS notifications;")
-	_, _ = testPool.Exec(context.Background(), "DROP TABLE IF EXISTS incidents;")
-	_, _ = testPool.Exec(context.Background(), "DROP TABLE IF EXISTS alerts;")
-	testPool.Close()
+	l := logger.New(cfg.Log.Level)
+	db := New(pg, l)
+	// Создание репозитория
+
+	// Запуск тестов
+	db.db.Close()
 }
 
 func TestStoreAlert(t *testing.T) {
-	setup()
-	defer teardown()
+	// alert := entity.Alert{
+	// 	AlertName:    "Test Alert",
+	// 	Severity:     "High",
+	// 	Description:  "Test Description",
+	// 	CreateAt:     time.Now(),
+	// 	GeneratorURL: "http://example.com",
+	// 	Status:       "Active",
+	// 	Job:          "TestJob",
+	// 	Service:      "TestService",
+	// 	Instance:     "TestInstance",
+	// 	StartsAt:     time.Now(),
+	// 	EndsAt:       time.Now(),
+	// }
 
-	alert := entity.Alert{
-		AlertName:    "Test Alert",
-		Severity:     "High",
-		Description:  "This is a test alert",
-		CreateAt:     time.Now(),
-		GeneratorURL: "http://example.com",
-		Status:       "active",
-	}
+	// // Вставка алерта
+	// alertID, err := repo.StoreAlert(testCtx, alert)
+	// if err != nil {
+	// 	t.Fatalf("Failed to store alert: %v", err)
+	// }
 
-	_, err := testRepo.StoreAlert(context.Background(), alert)
-	assert.NoError(t, err)
-
-	alerts, err := testRepo.GetAlerts(context.Background())
-	assert.NoError(t, err)
-	assert.Len(t, alerts, 1)
-	assert.Equal(t, alerts[0].AlertName, alert.AlertName)
+	// // Проверка, что alertID больше 0
+	// if alertID <= 0 {
+	// 	t.Errorf("Expected alertID to be greater than 0, got %d", alertID)
+	// }
 }
 
-func TestGetAlert(t *testing.T) {
-	setup()
-	defer teardown()
-
-	alert := entity.Alert{
-		AlertName:    "Test Alert",
-		Severity:     "High",
-		Description:  "This is a test alert",
-		CreateAt:     time.Now(),
-		GeneratorURL: "http://example.com",
-		Status:       "active",
-	}
-
-	_, err := testRepo.StoreAlert(context.Background(), alert)
-	assert.NoError(t, err)
-
-	fetchedAlert, err := testRepo.GetAlert(context.Background(), alert.AlertID)
-	assert.NoError(t, err)
-	assert.Equal(t, fetchedAlert.AlertName, alert.AlertName)
+func TestDeleteAlert(t *testing.T) {
+	// Удаление тестового алерта
+	// err := repo.DeleteAlert(testCtx, 1) // Используйте корректный alertID
+	// if err != nil {
+	// 	t.Fatalf("Failed to delete alert: %v", err)
+	// }
 }
-
-func TestGetAlerts(t *testing.T) {
-	setup()
-	defer teardown()
-
-	alert1 := entity.Alert{
-		AlertName:    "Test Alert 1",
-		Severity:     "High",
-		Description:  "This is a test alert 1",
-		CreateAt:     time.Now(),
-		GeneratorURL: "http://example.com",
-		Status:       "active",
-	}
-
-	alert2 := entity.Alert{
-		AlertName:    "Test Alert 2",
-		Severity:     "Medium",
-		Description:  "This is a test alert 2",
-		CreateAt:     time.Now(),
-		GeneratorURL: "http://example.com",
-		Status:       "active",
-	}
-
-	_, err := testRepo.StoreAlert(context.Background(), alert1)
-	assert.NoError(t, err)
-
-	_, err = testRepo.StoreAlert(context.Background(), alert2)
-	assert.NoError(t, err)
-
-	alerts, err := testRepo.GetAlerts(context.Background())
-	assert.NoError(t, err)
-	assert.Len(t, alerts, 2)
-}
-
-*/

@@ -12,10 +12,9 @@ func (s *Server) routeRegistration() {
 	s.router.PathPrefix("/swagger/").Handler(httpSwagger.WrapHandler)
 
 	apiRouter := s.router.PathPrefix("/api/v1").Subrouter()
-	apiRouter.Use(s.enableCORS) // включение CORS заголовков
+	// apiRouter.Use(s.enableCORS) // включение CORS заголовков
 
-	// POST /api/v1/alerts
-	apiRouter.HandleFunc("/temp", s.tempHandle).Methods(http.MethodPost, http.MethodOptions) // входящие алерты
+	apiRouter.HandleFunc("/task", s.createTaskJira).Methods(http.MethodPost, http.MethodOptions)
 
 }
 

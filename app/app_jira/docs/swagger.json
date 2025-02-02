@@ -10,6 +10,171 @@
     "host": "localhost:8786",
     "basePath": "/",
     "paths": {
+        "/api/v1/task": {
+            "get": {
+                "description": "Вернет массив всех задач, отсортированных по дате",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "task"
+                ],
+                "summary": "Получение всех задач",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/entity.TaskJira"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Ошибка получения данных",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Создаёт задачу для Jira и вернёт uuid созданной задачи",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "task"
+                ],
+                "summary": "Создание задачи для Jira",
+                "parameters": [
+                    {
+                        "description": "Json задачи для Jira",
+                        "name": "task",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/entity.TaskJira"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "uuid созданной в Jira задачи",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Ошибка в теле запроса",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Ошибка обработки алерта",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/task/list": {
+            "get": {
+                "description": "Вернет список задач отсортированных по дате с begin в размере count",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "task"
+                ],
+                "summary": "Получение списка задач",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Начальный индекс",
+                        "name": "begin",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Колличество получаемых задач",
+                        "name": "count",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/entity.TaskJira"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Недопустимые параметры",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Ошибка получения данных",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/task/{alert_id}": {
+            "get": {
+                "description": "Вернет задачу по указанному UUID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "task"
+                ],
+                "summary": "Получение задачи по UUID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "UUID задачи",
+                        "name": "task_uuid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/entity.TaskJira"
+                        }
+                    },
+                    "400": {
+                        "description": "Недопустимые параметры",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Ошибка получения данных",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/temp": {
             "post": {
                 "description": "Temp",
@@ -24,6 +189,40 @@
                     "200": {
                         "description": "OK"
                     }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "entity.TaskJira": {
+            "type": "object",
+            "properties": {
+                "assigned": {
+                    "type": "string",
+                    "example": "Иван Иванов"
+                },
+                "incident_id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "jira_task_id": {
+                    "type": "string"
+                },
+                "owner": {
+                    "type": "string",
+                    "example": "Петр Петров"
+                },
+                "task_id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "task_status": {
+                    "type": "string",
+                    "example": "Открыт"
+                },
+                "task_title": {
+                    "type": "string",
+                    "example": "Task Title"
                 }
             }
         }

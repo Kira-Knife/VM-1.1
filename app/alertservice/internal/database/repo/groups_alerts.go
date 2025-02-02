@@ -98,6 +98,27 @@ func (r *PostgresRepo) GetIncidentsWithDetails(ctx context.Context) ([]entity.Gr
 		); err != nil {
 			return nil, fmt.Errorf("GetIncidentsWithDetails - rows.Scan: %w", err)
 		}
+
+		sql, args, err := r.db.Builder.
+			Select("a.job, a.service, a.instance").
+			From("alerts a").
+			Where("a.alert_id IN (SELECT ia.alert_id FROM incident_alerts ia WHERE ia.incident_id = ?)", incident.IncidentID).
+			OrderBy("a.starts_at DESC").
+			Limit(1).
+			ToSql()
+		if err != nil {
+			return nil, fmt.Errorf("GetAlertDetailsByIncidentID - r.Builder: %w", err)
+		}
+
+		err = r.db.Pool.QueryRow(ctx, sql, args...).Scan(
+			&incident.Job,
+			&incident.Service,
+			&incident.Instance,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("GetAlertDetailsByIncidentID - r.Builder: %w", err)
+		}
+
 		incidents = append(incidents, incident)
 	}
 
@@ -157,11 +178,36 @@ func (r *PostgresRepo) GetListIncidentsWithDetails(ctx context.Context, begin, c
 		if err != nil {
 			return nil, fmt.Errorf("GetListIncidentsWithDetails - rows.Scan: %w", err)
 		}
+
+		sql, args, err = r.db.Builder.
+			Select("a.job, a.service, a.instance").
+			From("alerts a").
+			Where("a.alert_id IN (SELECT ia.alert_id FROM incident_alerts ia WHERE ia.incident_id = ?)", incident.IncidentID).
+			OrderBy("a.starts_at DESC").
+			Limit(1).
+			ToSql()
+		if err != nil {
+			return nil, fmt.Errorf("GetAlertDetailsByIncidentID - r.Builder: %w", err)
+		}
+
+		err = r.db.Pool.QueryRow(ctx, sql, args...).Scan(
+			&incident.Job,
+			&incident.Service,
+			&incident.Instance,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("GetAlertDetailsByIncidentID - r.Builder: %w", err)
+		}
+
 		incidents = append(incidents, incident)
 	}
 
 	if err := rows.Err(); err != nil {
 		return nil, fmt.Errorf("GetListIncidentsWithDetails - rows.Err: %w", err)
+	}
+
+	if err != nil {
+		return nil, fmt.Errorf("GetAlertDetailsByIncidentID - r.Pool.QueryRow: %w", err)
 	}
 
 	return incidents, nil

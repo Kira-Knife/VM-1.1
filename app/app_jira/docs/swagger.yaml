@@ -1,4 +1,28 @@
 basePath: /
+definitions:
+  entity.TaskJira:
+    properties:
+      assigned:
+        example: Иван Иванов
+        type: string
+      incident_id:
+        example: 1
+        type: integer
+      jira_task_id:
+        type: string
+      owner:
+        example: Петр Петров
+        type: string
+      task_id:
+        example: 1
+        type: integer
+      task_status:
+        example: Открыт
+        type: string
+      task_title:
+        example: Task Title
+        type: string
+    type: object
 host: localhost:8786
 info:
   contact: {}
@@ -7,6 +31,115 @@ info:
   title: app_jira
   version: "1.0"
 paths:
+  /api/v1/task:
+    get:
+      description: Вернет массив всех задач, отсортированных по дате
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/entity.TaskJira'
+            type: array
+        "500":
+          description: Ошибка получения данных
+          schema:
+            type: string
+      summary: Получение всех задач
+      tags:
+      - task
+    post:
+      consumes:
+      - application/json
+      description: Создаёт задачу для Jira и вернёт uuid созданной задачи
+      parameters:
+      - description: Json задачи для Jira
+        in: body
+        name: task
+        required: true
+        schema:
+          $ref: '#/definitions/entity.TaskJira'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: uuid созданной в Jira задачи
+          schema:
+            type: string
+        "400":
+          description: Ошибка в теле запроса
+          schema:
+            type: string
+        "500":
+          description: Ошибка обработки алерта
+          schema:
+            type: string
+      summary: Создание задачи для Jira
+      tags:
+      - task
+  /api/v1/task/{alert_id}:
+    get:
+      description: Вернет задачу по указанному UUID
+      parameters:
+      - description: UUID задачи
+        in: path
+        name: task_uuid
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entity.TaskJira'
+        "400":
+          description: Недопустимые параметры
+          schema:
+            type: string
+        "500":
+          description: Ошибка получения данных
+          schema:
+            type: string
+      summary: Получение задачи по UUID
+      tags:
+      - task
+  /api/v1/task/list:
+    get:
+      description: Вернет список задач отсортированных по дате с begin в размере count
+      parameters:
+      - description: Начальный индекс
+        in: query
+        name: begin
+        required: true
+        type: integer
+      - description: Колличество получаемых задач
+        in: query
+        name: count
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/entity.TaskJira'
+            type: array
+        "400":
+          description: Недопустимые параметры
+          schema:
+            type: string
+        "500":
+          description: Ошибка получения данных
+          schema:
+            type: string
+      summary: Получение списка задач
+      tags:
+      - task
   /api/v1/temp:
     post:
       description: Temp

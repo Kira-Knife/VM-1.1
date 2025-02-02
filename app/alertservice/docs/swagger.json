@@ -555,7 +555,19 @@
                 "incident_id": {
                     "type": "integer"
                 },
+                "instance": {
+                    "description": "хост (Grafana) нужно ещё посмотреть на это",
+                    "type": "string"
+                },
+                "job": {
+                    "description": "Job name, e.g., node_exporter, kafka_exporter (экспортер)",
+                    "type": "string"
+                },
                 "last_start_at": {
+                    "type": "string"
+                },
+                "service": {
+                    "description": "Arbitrary label for service, can be null",
                     "type": "string"
                 },
                 "severity": {

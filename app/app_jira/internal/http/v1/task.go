@@ -52,7 +52,7 @@ func (s *Server) createTaskJira(w http.ResponseWriter, r *http.Request) {
 // @Success 200 {array} entity.TaskJira
 // @Failure 500 {string} string "Ошибка получения данных"
 // @Router /api/v1/task [get]
-func (s *Server) getAllTashJira(w http.ResponseWriter, r *http.Request) {
+func (s *Server) getAllTaskJira(w http.ResponseWriter, r *http.Request) {
 	tasks, err := s.u.GetAllTaskJira(r.Context())
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -77,7 +77,7 @@ func (s *Server) getAllTashJira(w http.ResponseWriter, r *http.Request) {
 // @Router /api/v1/task/list [get]
 func (s *Server) getListTasksJira(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	beginStr := vars["begin"]                        // Получаем alert_id из параметров
+	beginStr := vars["begin"]
 	begin, err := strconv.ParseInt(beginStr, 10, 64) // Преобразуем в int64
 	if err != nil || begin < 0 {
 		w.WriteHeader(http.StatusBadRequest)
@@ -85,7 +85,7 @@ func (s *Server) getListTasksJira(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	countStr := vars["count"]                        // Получаем alert_id из параметров
+	countStr := vars["count"]
 	count, err := strconv.ParseInt(countStr, 10, 64) // Преобразуем в int64
 	if err != nil || count <= 0 {
 		w.WriteHeader(http.StatusBadRequest)
@@ -137,4 +137,54 @@ func (s *Server) getTaskJiraByID(w http.ResponseWriter, r *http.Request) {
 	} else {
 		w.WriteHeader(http.StatusOK)
 	}
+}
+
+type TaskStatus struct {
+	NewStatus string `json:"status" example:"Открыт"`
+}
+
+// @Summary Обновление статуса задачи Jira
+// @Description Обновляет статуст задачи Jira
+// @Tags task
+// @Param task_uuid path uuid.UUID true "uuid задачи Jira"
+// @Param task_status body TaskStatus true "Новый статус. Используйте статусы из списка: Открыт, В работе, Решенный, Отклоненный."
+// @Success 200
+// @Failure 400 {string} string "Недопустимые параметры"
+// @Failure 500 {string} string "Внутренняя ошибка сервера"
+// @Router /api/v1/task/{task_uuid} [patch]
+func (s *Server) updateTaskStatus(w http.ResponseWriter, r *http.Request) {
+	s.logger.Debug("Run updateTaskStatus")
+
+	vars := mux.Vars(r)
+	uuidStr := vars["task_uuid"]
+	uuidValue, err := uuid.Parse(uuidStr)
+	if err != nil {
+		s.logger.Error(err)
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(fmt.Sprintf("Недопустимый параметр task_uuid: %v.", err)))
+		return
+	}
+
+	// Извлечение нового статуса из тела запроса
+	var requestBody TaskStatus
+
+	if err := json.NewDecoder(r.Body).Decode(&requestBody); err != nil {
+		s.logger.Error(err)
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(fmt.Sprintf("Недопустимое тело запроса: %v.", err)))
+		return
+	}
+
+	s.logger.Debug("Вызов метода UpdateTaskJiraStatus")
+	// Вызов метода UpdateTaskJiraStatus
+	err = s.u.UpdateTaskJiraStatus(r.Context(), uuidValue, requestBody.NewStatus)
+	if err != nil {
+		s.logger.Error(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(fmt.Sprintf("Ошибка: %v.", err)))
+		return
+	}
+
+	// Успешное обновление статуса
+	w.WriteHeader(http.StatusOK) // 200 No Content
 }
