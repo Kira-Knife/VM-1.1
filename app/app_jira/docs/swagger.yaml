@@ -159,6 +159,36 @@ paths:
       summary: Обновление статуса задачи Jira
       tags:
       - task
+  /api/v1/task/incident/{incident_id}:
+    patch:
+      description: Обновляет статуст задачи Jira
+      parameters:
+      - description: ID инцидента, с которым связана задача
+        in: path
+        name: incident_id
+        required: true
+        type: integer
+      - description: 'Новый статус. Используйте статусы из списка: Открыт, В работе,
+          Решенный, Отклоненный.'
+        in: body
+        name: task_status
+        required: true
+        schema:
+          $ref: '#/definitions/v1.TaskStatus'
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Недопустимые параметры
+          schema:
+            type: string
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            type: string
+      summary: Обновление статуса задачи Jira
+      tags:
+      - task
   /api/v1/task/list:
     get:
       description: Вернет список задач отсортированных по дате с begin в размере count

@@ -9,10 +9,11 @@ import (
 type (
 	// Config -.
 	Config struct {
-		App  `yaml:"app"`
-		HTTP `yaml:"http"`
-		Log  `yaml:"logger"`
-		PG   `yaml:"postgres"`
+		App     `yaml:"app"`
+		HTTP    `yaml:"http"`
+		Log     `yaml:"logger"`
+		PG      `yaml:"postgres"`
+		AppJira `yaml:"app_jira"`
 	}
 
 	// App -.
@@ -41,6 +42,10 @@ type (
 		*/
 		PoolMax int    `env-required:"true" yaml:"pool_max"`
 		URL     string `env-required:"true" yaml:"pg_url"`
+	}
+
+	AppJira struct {
+		URL string `yaml:"url"`
 	}
 )
 

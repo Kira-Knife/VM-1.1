@@ -89,6 +89,50 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/task/incident/{incident_id}": {
+            "patch": {
+                "description": "Обновляет статуст задачи Jira",
+                "tags": [
+                    "task"
+                ],
+                "summary": "Обновление статуса задачи Jira",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID инцидента, с которым связана задача",
+                        "name": "incident_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Новый статус. Используйте статусы из списка: Открыт, В работе, Решенный, Отклоненный.",
+                        "name": "task_status",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/v1.TaskStatus"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Недопустимые параметры",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервера",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/task/list": {
             "get": {
                 "description": "Вернет список задач отсортированных по дате с begin в размере count",

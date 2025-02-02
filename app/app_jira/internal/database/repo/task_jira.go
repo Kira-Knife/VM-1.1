@@ -125,3 +125,22 @@ func (r *PostgresRepo) UpdateTaskJiraStatus(ctx context.Context, jiraTaskId uuid
 	}
 	return nil
 }
+
+// UpdateTaskJiraStatus - обновление статуса задачи
+func (r *PostgresRepo) UpdateTaskJiraStatusByIncidentID(ctx context.Context, incidentID int64, newStatusID int) error {
+
+	sql, args, err := r.db.Builder.
+		Update("tasks").
+		Set("task_status_id", newStatusID).
+		Where("incident_id = ?", incidentID).
+		ToSql()
+	if err != nil {
+		return fmt.Errorf("PostgresRepo - UpdateTaskJiraStatus - r.Builder: %w", err)
+	}
+
+	_, err = r.db.Pool.Exec(ctx, sql, args...)
+	if err != nil {
+		return fmt.Errorf("PostgresRepo - UpdateTaskJiraStatus - r.Pool.Exec: %w", err)
+	}
+	return nil
+}

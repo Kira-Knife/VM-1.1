@@ -34,3 +34,11 @@ func (u *UseCase) UpdateTaskJiraStatus(ctx context.Context, uuID uuid.UUID, newS
 	}
 	return u.db.UpdateTaskJiraStatus(ctx, uuID, statusId)
 }
+
+func (u *UseCase) UpdateTaskJiraStatusByIncidentID(ctx context.Context, incidentID int64, newStatus string) error {
+	statusId, err := u.db.GetTaskStatusIDByName(ctx, newStatus)
+	if err != nil {
+		return fmt.Errorf("UseCase - UpdateTaskJiraStatus: неверно указан статус")
+	}
+	return u.db.UpdateTaskJiraStatusByIncidentID(ctx, incidentID, statusId)
+}

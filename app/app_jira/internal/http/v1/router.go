@@ -18,4 +18,5 @@ func (s *Server) routeRegistration() {
 	apiRouter.HandleFunc("/task/list", s.getListTasksJira).Methods(http.MethodGet, http.MethodOptions)
 	apiRouter.HandleFunc("/task/{task_uuid:[0-9a-fA-F-]{36}}", s.getTaskJiraByID).Methods(http.MethodGet, http.MethodOptions)
 	apiRouter.HandleFunc("/task/{task_uuid:[0-9a-fA-F-]{36}}", s.updateTaskStatus).Methods(http.MethodPatch, http.MethodOptions)
+	apiRouter.HandleFunc("/task/incident/{incident_id:[0-9]+}", s.updateTaskStatusByIncidentID).Methods(http.MethodPatch, http.MethodOptions)
 }

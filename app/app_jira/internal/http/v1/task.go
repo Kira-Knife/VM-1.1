@@ -196,3 +196,48 @@ func (s *Server) updateTaskStatus(w http.ResponseWriter, r *http.Request) {
 	// Успешное обновление статуса
 	w.WriteHeader(http.StatusOK) // 200 No Content
 }
+
+// @Summary Обновление статуса задачи Jira
+// @Description Обновляет статуст задачи Jira
+// @Tags task
+// @Param incident_id path int64 true "ID инцидента, с которым связана задача"
+// @Param task_status body TaskStatus true "Новый статус. Используйте статусы из списка: Открыт, В работе, Решенный, Отклоненный."
+// @Success 200
+// @Failure 400 {string} string "Недопустимые параметры"
+// @Failure 500 {string} string "Внутренняя ошибка сервера"
+// @Router /api/v1/task/incident/{incident_id} [patch]
+func (s *Server) updateTaskStatusByIncidentID(w http.ResponseWriter, r *http.Request) {
+	s.logger.Debug("Run updateTaskStatus")
+
+	vars := mux.Vars(r)
+	incidentIDStr := vars["incident_id"]                       // Получаем alert_id из параметров
+	incidentID, err := strconv.ParseInt(incidentIDStr, 10, 64) // Преобразуем в int64
+	if err != nil || incidentID < 0 {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(fmt.Sprintf("Некорректный параметр ID (int64 > 0): %v.", err)))
+		return
+	}
+
+	// Извлечение нового статуса из тела запроса
+	var requestBody TaskStatus
+
+	if err := json.NewDecoder(r.Body).Decode(&requestBody); err != nil {
+		s.logger.Error(err)
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(fmt.Sprintf("Недопустимое тело запроса: %v.", err)))
+		return
+	}
+
+	s.logger.Debug("Вызов метода UpdateTaskJiraStatus")
+	// Вызов метода UpdateTaskJiraStatus
+	err = s.u.UpdateTaskJiraStatusByIncidentID(r.Context(), incidentID, requestBody.NewStatus)
+	if err != nil {
+		s.logger.Error(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(fmt.Sprintf("Ошибка: %v.", err)))
+		return
+	}
+
+	// Успешное обновление статуса
+	w.WriteHeader(http.StatusOK) // 200 No Content
+}

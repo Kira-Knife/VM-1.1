@@ -15,3 +15,6 @@ logger:
 postgres:
   pool_max: 2
   pg_url: "postgres://admin:admin@localhost:5432/vmalertservice?sslmode=disable"
+
+app_jira:
+  url: "http://localhost:8786"
