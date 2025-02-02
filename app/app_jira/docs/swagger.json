@@ -100,7 +100,7 @@
                     },
                     {
                         "description": "Новый статус. Используйте статусы из списка: Открыт, В работе, Решенный, Отклоненный.",
-                        "name": "task_status",
+                        "name": "status",
                         "in": "body",
                         "required": true,
                         "schema": {
@@ -234,7 +234,7 @@
                     },
                     {
                         "description": "Новый статус. Используйте статусы из списка: Открыт, В работе, Решенный, Отклоненный.",
-                        "name": "task_status",
+                        "name": "status",
                         "in": "body",
                         "required": true,
                         "schema": {
@@ -322,6 +322,9 @@
         },
         "v1.TaskStatus": {
             "type": "object",
+            "required": [
+                "status"
+            ],
             "properties": {
                 "status": {
                     "type": "string",

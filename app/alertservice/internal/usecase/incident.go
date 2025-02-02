@@ -33,6 +33,7 @@ func (u *UseCase) GetIncident(incidentID int64) (entity.IncidentResponse, error)
 // обновление ID статуса инцидента
 // Проверить что такой статус существует, если нет то вернуть ошибку с возможными статусами
 func (u *UseCase) UpdateIncidentStatus(incidentID int64, newStatus string) error {
+	u.logger.Debug("UpdateIncidentStatus со статусом: %s", newStatus)
 	ctx, _ := context.WithCancel(context.Background())
 	// err := u.db.UpdateIncidentStatus(ctx, incidentID, newStatus)
 	st, err := u.db.GetIncidentStates(ctx)
@@ -59,7 +60,14 @@ func (u *UseCase) UpdateIncidentStatus(incidentID int64, newStatus string) error
 		u.logger.Error("UpdateIncidentStatus - incidentID %d - %v", incidentID, err)
 		return fmt.Errorf("UpdateIncidentStatus - %w", err)
 	}
-	return err
+
+	// обновление статуса задачи в Jira
+	err = u.appJiraApi.UpdateStatusTaskJira(ctx, incidentID, newStatus)
+	if err != nil {
+		u.logger.Warn("Не удалось обновить статус задачи в Jira: %v", err)
+	}
+
+	return nil
 }
 
 // GetAlerts - Вернуть алерты начиная с индекса begin, count штук

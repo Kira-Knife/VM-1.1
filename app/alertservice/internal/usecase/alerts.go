@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"alertservice/internal/entity"
+	appjira "alertservice/internal/usecase/app_jira"
 	"context"
 	"database/sql"
 	"encoding/json"
@@ -96,6 +97,22 @@ func (u *UseCase) IncomingAlerts(vm_alert_notif entity.VMAlertNotification) erro
 				u.db.DeleteAlert(ctx, incidentID)
 				continue
 			}
+
+			// При создании нового инцидента создаём задачу в Jira
+			taskReq := appjira.TaskJiraRequest{
+				IncidentId: incidentID,
+				Status:     "Открыт",
+				TaskTitle:  incidents[i].Description,
+				Assigned:   "user1",
+				Owner:      "user2",
+			}
+			uuId, err := u.appJiraApi.CreateTaskJira(ctx, taskReq)
+			if err != nil {
+				u.logger.Warn("Не удалось создать задачу Jira: %v", err)
+			} else {
+				u.logger.Info("Создана задача Jira с uuid: %v", uuId)
+			}
+
 		} else {
 			incidentID = openedInсidentsId[0] //
 		}

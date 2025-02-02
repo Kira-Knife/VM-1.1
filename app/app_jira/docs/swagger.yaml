@@ -46,6 +46,8 @@ definitions:
       status:
         example: Открыт
         type: string
+    required:
+    - status
     type: object
 host: localhost:8786
 info:
@@ -141,7 +143,7 @@ paths:
       - description: 'Новый статус. Используйте статусы из списка: Открыт, В работе,
           Решенный, Отклоненный.'
         in: body
-        name: task_status
+        name: status
         required: true
         schema:
           $ref: '#/definitions/v1.TaskStatus'
@@ -171,7 +173,7 @@ paths:
       - description: 'Новый статус. Используйте статусы из списка: Открыт, В работе,
           Решенный, Отклоненный.'
         in: body
-        name: task_status
+        name: status
         required: true
         schema:
           $ref: '#/definitions/v1.TaskStatus'

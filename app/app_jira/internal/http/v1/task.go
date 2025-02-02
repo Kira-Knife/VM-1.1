@@ -148,14 +148,14 @@ func (s *Server) getTaskJiraByID(w http.ResponseWriter, r *http.Request) {
 }
 
 type TaskStatus struct {
-	NewStatus string `json:"status" example:"Открыт"`
+	NewStatus string `json:"status" validate:"required" example:"Открыт"`
 }
 
 // @Summary Обновление статуса задачи Jira
 // @Description Обновляет статуст задачи Jira
 // @Tags task
 // @Param task_uuid path string true "uuid задачи Jira"
-// @Param task_status body TaskStatus true "Новый статус. Используйте статусы из списка: Открыт, В работе, Решенный, Отклоненный."
+// @Param status body TaskStatus true "Новый статус. Используйте статусы из списка: Открыт, В работе, Решенный, Отклоненный."
 // @Success 200
 // @Failure 400 {string} string "Недопустимые параметры"
 // @Failure 500 {string} string "Внутренняя ошибка сервера"
@@ -183,6 +183,13 @@ func (s *Server) updateTaskStatus(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if requestBody.NewStatus == "" {
+		s.logger.Info("updateTaskStatus - requestBody.NewStatus пустая строка")
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(fmt.Sprintf("Недопустимое тело запроса - статус пустой.")))
+		return
+	}
+
 	s.logger.Debug("Вызов метода UpdateTaskJiraStatus")
 	// Вызов метода UpdateTaskJiraStatus
 	err = s.u.UpdateTaskJiraStatus(r.Context(), uuidValue, requestBody.NewStatus)
@@ -201,7 +208,7 @@ func (s *Server) updateTaskStatus(w http.ResponseWriter, r *http.Request) {
 // @Description Обновляет статуст задачи Jira
 // @Tags task
 // @Param incident_id path int64 true "ID инцидента, с которым связана задача"
-// @Param task_status body TaskStatus true "Новый статус. Используйте статусы из списка: Открыт, В работе, Решенный, Отклоненный."
+// @Param status body TaskStatus true "Новый статус. Используйте статусы из списка: Открыт, В работе, Решенный, Отклоненный."
 // @Success 200
 // @Failure 400 {string} string "Недопустимые параметры"
 // @Failure 500 {string} string "Внутренняя ошибка сервера"
@@ -225,6 +232,13 @@ func (s *Server) updateTaskStatusByIncidentID(w http.ResponseWriter, r *http.Req
 		s.logger.Error(err)
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte(fmt.Sprintf("Недопустимое тело запроса: %v.", err)))
+		return
+	}
+
+	if requestBody.NewStatus == "" {
+		s.logger.Info("updateTaskStatus - requestBody.NewStatus пустая строка")
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(fmt.Sprintf("Недопустимое тело запроса - статус пустой.")))
 		return
 	}
 

@@ -106,7 +106,7 @@ const docTemplate = `{
                     },
                     {
                         "description": "Новый статус. Используйте статусы из списка: Открыт, В работе, Решенный, Отклоненный.",
-                        "name": "task_status",
+                        "name": "status",
                         "in": "body",
                         "required": true,
                         "schema": {
@@ -240,7 +240,7 @@ const docTemplate = `{
                     },
                     {
                         "description": "Новый статус. Используйте статусы из списка: Открыт, В работе, Решенный, Отклоненный.",
-                        "name": "task_status",
+                        "name": "status",
                         "in": "body",
                         "required": true,
                         "schema": {
@@ -328,6 +328,9 @@ const docTemplate = `{
         },
         "v1.TaskStatus": {
             "type": "object",
+            "required": [
+                "status"
+            ],
             "properties": {
                 "status": {
                     "type": "string",
