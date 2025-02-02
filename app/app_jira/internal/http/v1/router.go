@@ -1,7 +1,6 @@
 package v1
 
 import (
-	"log"
 	"net/http"
 
 	httpSwagger "github.com/swaggo/http-swagger"
@@ -15,17 +14,8 @@ func (s *Server) routeRegistration() {
 	// apiRouter.Use(s.enableCORS) // включение CORS заголовков
 
 	apiRouter.HandleFunc("/task", s.createTaskJira).Methods(http.MethodPost, http.MethodOptions)
-
-}
-
-func (s *Server) handlerPass(w http.ResponseWriter, r *http.Request) {
-	// Устанавливаем код состояния 503
-	w.WriteHeader(http.StatusServiceUnavailable)
-
-	// Возвращаем сообщение о том, что функция в разработке
-	_, err := w.Write([]byte("Этот функционал находится в разработке. Пожалуйста, попробуйте позже."))
-	if err != nil {
-		// Логируем ошибку, если не удалось записать ответ
-		log.Printf("Failed to write response: %v", err)
-	}
+	apiRouter.HandleFunc("/task", s.getAllTaskJira).Methods(http.MethodGet, http.MethodOptions)
+	apiRouter.HandleFunc("/task/list", s.getListTasksJira).Methods(http.MethodGet, http.MethodOptions)
+	apiRouter.HandleFunc("/task/{task_uuid:[0-9a-fA-F-]{36}}", s.getTaskJiraByID).Methods(http.MethodGet, http.MethodOptions)
+	apiRouter.HandleFunc("/task/{task_uuid:[0-9a-fA-F-]{36}}", s.updateTaskStatus).Methods(http.MethodPatch, http.MethodOptions)
 }

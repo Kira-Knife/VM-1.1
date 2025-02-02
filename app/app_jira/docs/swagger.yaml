@@ -23,6 +23,30 @@ definitions:
         example: Task Title
         type: string
     type: object
+  entity.TaskJiraRequest:
+    properties:
+      assigned:
+        example: Иван Иванов
+        type: string
+      incident_id:
+        example: 1
+        type: integer
+      owner:
+        example: Петр Петров
+        type: string
+      task_status:
+        example: Открыт
+        type: string
+      task_title:
+        example: Task Title
+        type: string
+    type: object
+  v1.TaskStatus:
+    properties:
+      status:
+        example: Открыт
+        type: string
+    type: object
 host: localhost:8786
 info:
   contact: {}
@@ -60,7 +84,7 @@ paths:
         name: task
         required: true
         schema:
-          $ref: '#/definitions/entity.TaskJira'
+          $ref: '#/definitions/entity.TaskJiraRequest'
       produces:
       - application/json
       responses:
@@ -79,7 +103,7 @@ paths:
       summary: Создание задачи для Jira
       tags:
       - task
-  /api/v1/task/{alert_id}:
+  /api/v1/task/{task_uuid}:
     get:
       description: Вернет задачу по указанному UUID
       parameters:
@@ -87,7 +111,7 @@ paths:
         in: path
         name: task_uuid
         required: true
-        type: integer
+        type: string
       produces:
       - application/json
       responses:
@@ -104,6 +128,35 @@ paths:
           schema:
             type: string
       summary: Получение задачи по UUID
+      tags:
+      - task
+    patch:
+      description: Обновляет статуст задачи Jira
+      parameters:
+      - description: uuid задачи Jira
+        in: path
+        name: task_uuid
+        required: true
+        type: string
+      - description: 'Новый статус. Используйте статусы из списка: Открыт, В работе,
+          Решенный, Отклоненный.'
+        in: body
+        name: task_status
+        required: true
+        schema:
+          $ref: '#/definitions/v1.TaskStatus'
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Недопустимые параметры
+          schema:
+            type: string
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            type: string
+      summary: Обновление статуса задачи Jira
       tags:
       - task
   /api/v1/task/list:
@@ -140,15 +193,4 @@ paths:
       summary: Получение списка задач
       tags:
       - task
-  /api/v1/temp:
-    post:
-      description: Temp
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-      summary: Temp
-      tags:
-      - temp
 swagger: "2.0"

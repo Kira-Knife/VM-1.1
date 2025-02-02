@@ -17,7 +17,7 @@ import (
 // @Tags task
 // @Accept json
 // @Produce json
-// @Param task body entity.TaskJira true "Json задачи для Jira"
+// @Param task body entity.TaskJiraRequest true "Json задачи для Jira"
 // @Success 200 {object} uuid.UUID "uuid созданной в Jira задачи"
 // @Failure 400 {string} string "Ошибка в теле запроса"
 // @Failure 500 {string} string "Ошибка обработки алерта"
@@ -25,15 +25,15 @@ import (
 func (s *Server) createTaskJira(w http.ResponseWriter, r *http.Request) {
 	s.logger.Debug("createTaskJira")
 
-	var task entity.TaskJira
-	if err := json.NewDecoder(r.Body).Decode(&task); err != nil {
+	var taskReq entity.TaskJiraRequest
+	if err := json.NewDecoder(r.Body).Decode(&taskReq); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte(fmt.Sprintf("Ошибка в теле запроса: %v", err)))
 		return
 	}
 
 	// Обрабатываем полученные алерты
-	uuID, err := s.u.CreateTaskJira(r.Context(), task)
+	uuID, err := s.u.CreateTaskJira(r.Context(), taskReq)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte(fmt.Sprintf("Ошибка обработки алертов: %v", err)))
@@ -41,6 +41,7 @@ func (s *Server) createTaskJira(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Возвращаем успешный ответ
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(uuID)
 }
@@ -110,17 +111,24 @@ func (s *Server) getListTasksJira(w http.ResponseWriter, r *http.Request) {
 // @Description Вернет задачу по указанному UUID
 // @Tags task
 // @Produce json
-// @Param task_uuid path int true "UUID задачи"
+// @Param task_uuid path string true "UUID задачи"
 // @Success 200 {object} entity.TaskJira
 // @Failure 400 {string} string "Недопустимые параметры"
 // @Failure 500 {string} string "Ошибка получения данных"
-// @Router /api/v1/task/{alert_id} [get]
+// @Router /api/v1/task/{task_uuid} [get]
 func (s *Server) getTaskJiraByID(w http.ResponseWriter, r *http.Request) {
-
-	uuId := uuid.UUID{}
+	vars := mux.Vars(r)
+	uuidStr := vars["task_uuid"]
+	uuidValue, err := uuid.Parse(uuidStr)
+	if err != nil {
+		s.logger.Error(err)
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(fmt.Sprintf("Недопустимый параметр task_uuid: %v.", err)))
+		return
+	}
 
 	// Вызов метода GetAlert
-	task, err := s.u.GetTaskJiraByUUID(r.Context(), uuId)
+	task, err := s.u.GetTaskJiraByUUID(r.Context(), uuidValue)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte(fmt.Sprintf("Ошибка получения данных: %v.", err)))
@@ -146,7 +154,7 @@ type TaskStatus struct {
 // @Summary Обновление статуса задачи Jira
 // @Description Обновляет статуст задачи Jira
 // @Tags task
-// @Param task_uuid path uuid.UUID true "uuid задачи Jira"
+// @Param task_uuid path string true "uuid задачи Jira"
 // @Param task_status body TaskStatus true "Новый статус. Используйте статусы из списка: Открыт, В работе, Решенный, Отклоненный."
 // @Success 200
 // @Failure 400 {string} string "Недопустимые параметры"

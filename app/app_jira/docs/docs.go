@@ -63,7 +63,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/entity.TaskJira"
+                            "$ref": "#/definitions/entity.TaskJiraRequest"
                         }
                     }
                 ],
@@ -140,7 +140,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/task/{alert_id}": {
+        "/api/v1/task/{task_uuid}": {
             "get": {
                 "description": "Вернет задачу по указанному UUID",
                 "produces": [
@@ -152,7 +152,7 @@ const docTemplate = `{
                 "summary": "Получение задачи по UUID",
                 "parameters": [
                     {
-                        "type": "integer",
+                        "type": "string",
                         "description": "UUID задачи",
                         "name": "task_uuid",
                         "in": "path",
@@ -179,21 +179,46 @@ const docTemplate = `{
                         }
                     }
                 }
-            }
-        },
-        "/api/v1/temp": {
-            "post": {
-                "description": "Temp",
-                "produces": [
-                    "application/json"
-                ],
+            },
+            "patch": {
+                "description": "Обновляет статуст задачи Jira",
                 "tags": [
-                    "temp"
+                    "task"
                 ],
-                "summary": "Temp",
+                "summary": "Обновление статуса задачи Jira",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "uuid задачи Jira",
+                        "name": "task_uuid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Новый статус. Используйте статусы из списка: Открыт, В работе, Решенный, Отклоненный.",
+                        "name": "task_status",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/v1.TaskStatus"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK"
+                    },
+                    "400": {
+                        "description": "Недопустимые параметры",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервера",
+                        "schema": {
+                            "type": "string"
+                        }
                     }
                 }
             }
@@ -229,6 +254,40 @@ const docTemplate = `{
                 "task_title": {
                     "type": "string",
                     "example": "Task Title"
+                }
+            }
+        },
+        "entity.TaskJiraRequest": {
+            "type": "object",
+            "properties": {
+                "assigned": {
+                    "type": "string",
+                    "example": "Иван Иванов"
+                },
+                "incident_id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "owner": {
+                    "type": "string",
+                    "example": "Петр Петров"
+                },
+                "task_status": {
+                    "type": "string",
+                    "example": "Открыт"
+                },
+                "task_title": {
+                    "type": "string",
+                    "example": "Task Title"
+                }
+            }
+        },
+        "v1.TaskStatus": {
+            "type": "object",
+            "properties": {
+                "status": {
+                    "type": "string",
+                    "example": "Открыт"
                 }
             }
         }
