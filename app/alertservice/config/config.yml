@@ -9,7 +9,7 @@ http:
 
 
 logger:
-  log_level: 'error'
+  log_level: 'debug'
   rollbar_env: 'alertservice'
 
 postgres:

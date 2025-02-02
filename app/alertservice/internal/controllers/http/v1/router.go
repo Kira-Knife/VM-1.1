@@ -32,6 +32,11 @@ func (s *Server) routeRegistration() {
 	apiRouter.HandleFunc("/incidents/list", s.getListIncidents).Methods(http.MethodGet)
 	apiRouter.HandleFunc("/incidents/{incident_id:[0-9]+}/alerts/count", s.getCountOfAlertsForIncident).Methods(http.MethodGet)
 
+	// heatmap
+	apiRouter.HandleFunc("/heatmap/today", s.getHeatmapToday).Methods(http.MethodGet)
+	apiRouter.HandleFunc("/heatmap/history", s.getHeatmapHistory).Methods(http.MethodGet)
+	apiRouter.HandleFunc("/heatmap/all", s.getHeatmapAllDays).Methods(http.MethodGet)
+
 	// incident_states
 	apiRouter.HandleFunc("/incident_states", s.getIncidentStates).Methods(http.MethodGet)
 

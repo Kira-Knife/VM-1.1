@@ -71,6 +71,40 @@ definitions:
       status:
         type: string
     type: object
+  entity.HeatmapHistory:
+    properties:
+      begin_date:
+        type: string
+      count_alerts:
+        type: integer
+      count_incidents:
+        type: integer
+      end_date:
+        type: string
+      statistics_url:
+        type: string
+    type: object
+  entity.HeatmapToday:
+    properties:
+      begin_time:
+        description: дата Date, но время 00:00:01
+        type: string
+      count_alerts:
+        description: число алертов в диапазоне от BeginTime до EndTime
+        type: integer
+      count_incidents:
+        description: число инцидентов в диапазоне от BeginTime до EndTime
+        type: integer
+      date:
+        description: дата, за котороую собирается статистика
+        type: string
+      end_time:
+        description: дата Date, но время 23:59:59
+        type: string
+      statistics_url:
+        description: пока пустое поле
+        type: string
+    type: object
   entity.IncidentResponse:
     properties:
       create_at:
@@ -345,6 +379,64 @@ paths:
       summary: Получение списка алертов
       tags:
       - alerts
+  /api/v1/heatmap/all:
+    get:
+      description: При данном запросе AlertService возвращает список HeatmapToday
+        по каждому дню  за прошедшие дни с первой даты, сохраненной в БД, до текущей
+        даты.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/entity.HeatmapToday'
+            type: array
+        "500":
+          description: Ошибка обработки алерта
+          schema:
+            type: string
+      summary: Получение данных за все прошедшие дни в виде списка по дням
+      tags:
+      - heatmap
+  /api/v1/heatmap/history:
+    get:
+      description: При данном запросе AlertService возвращает полученные динамически
+        агрегированные данные для отображения Heatmap за прошедшие дни с первой даты,
+        сохраненной в БД, до текущей даты.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entity.HeatmapHistory'
+        "500":
+          description: Ошибка обработки алерта
+          schema:
+            type: string
+      summary: Получение общих данных за все прошедшие дни
+      tags:
+      - heatmap
+  /api/v1/heatmap/today:
+    get:
+      description: При данном запросе AlertService возвращает динамически обновляемую
+        статистику по количеству алертов за текущий день - с 00:00:01 до 23:59:59.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entity.HeatmapToday'
+        "500":
+          description: Ошибка обработки алерта
+          schema:
+            type: string
+      summary: Эндпоинт для данных за текущий день
+      tags:
+      - heatmap
   /api/v1/incident_states:
     get:
       description: Retrieve a list of alerts states
