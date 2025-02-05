@@ -616,6 +616,9 @@ const docTemplate = `{
                 "status": {
                     "description": "Current status of the alert",
                     "type": "string"
+                },
+                "update_at": {
+                    "type": "string"
                 }
             }
         },
@@ -651,6 +654,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "last_start_at": {
+                    "type": "string"
+                },
+                "priority": {
                     "type": "string"
                 },
                 "service": {
@@ -717,6 +723,10 @@ const docTemplate = `{
         "entity.IncidentResponse": {
             "type": "object",
             "properties": {
+                "assigned": {
+                    "description": "Assigned",
+                    "type": "string"
+                },
                 "create_at": {
                     "description": "Timestamp when the incident was created",
                     "type": "string"
@@ -733,6 +743,10 @@ const docTemplate = `{
                     "description": "Unique identifier for each incident",
                     "type": "integer"
                 },
+                "priority": {
+                    "description": "Level of criticality",
+                    "type": "string"
+                },
                 "severity": {
                     "description": "Level of criticality",
                     "type": "string"
@@ -740,22 +754,20 @@ const docTemplate = `{
                 "status": {
                     "description": "Current status of the incident",
                     "type": "string"
+                },
+                "update_at": {
+                    "type": "string"
                 }
             }
         },
         "entity.IncidentState": {
             "type": "object",
             "properties": {
-                "description": {
-                    "description": "Detailed description of the state",
-                    "type": "string"
-                },
                 "id": {
                     "description": "Unique identifier for each state",
                     "type": "integer"
                 },
                 "name": {
-                    "description": "Name of the state",
                     "type": "string"
                 }
             }

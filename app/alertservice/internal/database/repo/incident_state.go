@@ -11,7 +11,7 @@ import (
 // GetIncidentState - получение состояния инцидента по ID
 func (r *PostgresRepo) GetIncidentState(ctx context.Context, stateID int) (entity.IncidentState, error) {
 	sql, args, err := r.db.Builder.
-		Select("id, name, description").
+		Select("id, name").
 		From("incident_states").
 		Where(squirrel.Eq{"id": stateID}).
 		ToSql()
@@ -25,7 +25,6 @@ func (r *PostgresRepo) GetIncidentState(ctx context.Context, stateID int) (entit
 	err = row.Scan(
 		&state.ID,
 		&state.Name,
-		&state.Description,
 	)
 	if err != nil {
 		return entity.IncidentState{}, fmt.Errorf("IncidentStateRepo - GetIncidentState - row.Scan: %w", err)
@@ -37,7 +36,7 @@ func (r *PostgresRepo) GetIncidentState(ctx context.Context, stateID int) (entit
 // GetIncidentStates - получение всех состояний инцидентов
 func (r *PostgresRepo) GetIncidentStates(ctx context.Context) ([]entity.IncidentState, error) {
 	sql, args, err := r.db.Builder.
-		Select("id, name, description").
+		Select("id, name").
 		From("incident_states").
 		ToSql()
 	if err != nil {
@@ -57,7 +56,6 @@ func (r *PostgresRepo) GetIncidentStates(ctx context.Context) ([]entity.Incident
 		err = rows.Scan(
 			&state.ID,
 			&state.Name,
-			&state.Description,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("IncidentStateRepo - GetIncidentStates - rows.Scan: %w", err)
@@ -66,4 +64,29 @@ func (r *PostgresRepo) GetIncidentStates(ctx context.Context) ([]entity.Incident
 	}
 
 	return states, nil
+}
+
+// GetIncidentState - получение состояния инцидента по ID
+func (r *PostgresRepo) GetIncidentStateByName(ctx context.Context, stateName string) (entity.IncidentState, error) {
+	sql, args, err := r.db.Builder.
+		Select("id, name").
+		From("incident_states").
+		Where(squirrel.Eq{"name": stateName}).
+		ToSql()
+	if err != nil {
+		return entity.IncidentState{}, fmt.Errorf("IncidentStateRepo - GetIncidentState - r.Builder: %w", err)
+	}
+
+	row := r.db.Pool.QueryRow(ctx, sql, args...)
+
+	var state entity.IncidentState
+	err = row.Scan(
+		&state.ID,
+		&state.Name,
+	)
+	if err != nil {
+		return entity.IncidentState{}, fmt.Errorf("IncidentStateRepo - GetIncidentState - row.Scan: %w", err)
+	}
+
+	return state, nil
 }

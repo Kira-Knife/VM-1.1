@@ -45,7 +45,6 @@ type Alert struct {
 	AlertName    string    `db:"alert_name" json:"alert_name"`       // Name of the alert
 	Severity     string    `db:"severity" json:"severity"`           // Severity level of the alert
 	Description  string    `db:"description" json:"description"`     // Detailed description of the alert
-	CreateAt     time.Time `db:"create_at" json:"create_at"`         // Timestamp when the alert was created
 	GeneratorURL string    `db:"generator_url" json:"generator_url"` // URL of the alert generator
 	Status       string    `db:"status" json:"status"`               // Current status of the alert
 	Job          string    `db:"job" json:"job"`                     // Job name, e.g., node_exporter, kafka_exporter
@@ -53,6 +52,8 @@ type Alert struct {
 	Instance     string    `db:"instance" json:"instance"`           // IP and port of the source
 	StartsAt     time.Time `db:"starts_at" json:"starts_at"`         // Start time of the alert
 	EndsAt       time.Time `db:"ends_at" json:"ends_at"`             // End time of the alert
+	CreateAt     time.Time `db:"create_at" json:"create_at"`         // Timestamp when the alert was created
+	UpdateAt     time.Time `db:"update_at" json:"update_at"`
 }
 
 // Incident represents an incident entity
@@ -60,32 +61,37 @@ type Incident struct {
 	IncidentID   int64     `db:"incident_id" json:"incident_id"`     // Unique identifier for each incident
 	SeverityID   int       `db:"severity_id" json:"severity_id"`     // Level of criticality
 	Description  string    `db:"description" json:"description"`     // Detailed description of the incident
+	Assigned     string    `json:"assigned"`                         // Assigned
 	StatusID     int       `db:"status_id" json:"status_id"`         // Current status of the incident
-	CreateAt     time.Time `db:"create_at" json:"create_at"`         // Timestamp when the incident was created
 	GeneratorURL string    `db:"generator_url" json:"generator_url"` // URL of the incident generator
+	CreateAt     time.Time `db:"create_at" json:"create_at"`         // Timestamp when the incident was created
+	UpdateAt     time.Time `db:"update_at" json:"update_at"`
 }
 
+// В таком виде инцидент получает фронт
 type IncidentResponse struct {
 	IncidentID   int64     `json:"incident_id"`                      // Unique identifier for each incident
 	Severity     string    `json:"severity"`                         // Level of criticality
+	Priority     string    `json:"priority"`                         // Level of criticality
+	Assigned     string    `json:"assigned"`                         // Assigned
 	Description  string    `db:"description" json:"description"`     // Detailed description of the incident
 	Status       string    `json:"status"`                           // Current status of the incident
 	CreateAt     time.Time `db:"create_at" json:"create_at"`         // Timestamp when the incident was created
 	GeneratorURL string    `db:"generator_url" json:"generator_url"` // URL of the incident generator
+	UpdateAt     time.Time `db:"update_at" json:"update_at"`
 }
 
 // IncidentState represents the state of an incident
 type IncidentState struct {
-	ID          int    `db:"id" json:"id"`                   // Unique identifier for each state
-	Name        string `db:"name" json:"name"`               // Name of the state
-	Description string `db:"description" json:"description"` // Detailed description of the state
+	ID   int    `db:"id" json:"id"` // Unique identifier for each state
+	Name string `db:"name" json:"name"`
 }
 
 // Severity represents a severity level
 type Severity struct {
-	ID          int64  `db:"id" json:"id"`                   // Unique identifier for each severity level
-	Name        string `db:"name" json:"name"`               // Name of the severity level
-	Description string `db:"description" json:"description"` // Detailed description of the severity level
+	ID       int64  `db:"id" json:"id"`             // Unique identifier for each severity level
+	Name     string `db:"name" json:"name"`         // Name of the severity level
+	Priority string `db:"priority" json:"priority"` // priority
 }
 
 // IncidentAlert represents the relationship between incidents and alerts
@@ -123,6 +129,7 @@ type GroupIncident struct {
 	CreateAt     time.Time `json:"create_at"`
 	GeneratorURL string    `json:"generator_url"` // sql.NullString
 	Severity     string    `json:"severity"`
+	Priority     string    `json:"priority"`
 	Job          string    `json:"job"`      // Job name, e.g., node_exporter, kafka_exporter (экспортер)
 	Service      string    `json:"service"`  // Arbitrary label for service, can be null
 	Instance     string    `json:"instance"` // хост (Grafana) нужно ещё посмотреть на это

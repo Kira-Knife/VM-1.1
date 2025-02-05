@@ -11,7 +11,7 @@ import (
 // GetIncidents retrieves all incidents from the database.
 func (r *PostgresRepo) GetIncidents(ctx context.Context) ([]entity.Incident, error) {
 	sql, args, err := r.db.Builder.
-		Select("incident_id, severity_id, description, status_id, create_at, generator_url").
+		Select("incident_id, severity_id, description, assigned, status_id, create_at, update_at, generator_url").
 		From("incidents").
 		OrderBy("create_at DESC").
 		ToSql()
@@ -33,8 +33,10 @@ func (r *PostgresRepo) GetIncidents(ctx context.Context) ([]entity.Incident, err
 			&incident.IncidentID,
 			&incident.SeverityID,
 			&incident.Description,
+			&incident.Assigned,
 			&incident.StatusID,
 			&incident.CreateAt,
+			&incident.UpdateAt,
 			&incident.GeneratorURL,
 		)
 		if err != nil {
@@ -48,7 +50,7 @@ func (r *PostgresRepo) GetIncidents(ctx context.Context) ([]entity.Incident, err
 
 func (r *PostgresRepo) GetIncidentsResponse(ctx context.Context) ([]entity.IncidentResponse, error) {
 	sql, args, err := r.db.Builder.
-		Select("i.incident_id, s.name AS severity, i.description, is2.name AS status, i.create_at, i.generator_url").
+		Select("i.incident_id, i.assigned, s.name AS severity, s.priority AS priority, i.description, is2.name AS status, i.create_at, i.update_at, i.generator_url").
 		From("incidents i").
 		Join("severities s ON i.severity_id = s.id").
 		Join("incident_states is2 ON i.status_id = is2.id").
@@ -70,10 +72,13 @@ func (r *PostgresRepo) GetIncidentsResponse(ctx context.Context) ([]entity.Incid
 		var incident entity.IncidentResponse
 		err = rows.Scan(
 			&incident.IncidentID,
+			&incident.Assigned,
 			&incident.Severity,
+			&incident.Priority,
 			&incident.Description,
 			&incident.Status,
 			&incident.CreateAt,
+			&incident.UpdateAt,
 			&incident.GeneratorURL,
 		)
 		if err != nil {
@@ -89,12 +94,12 @@ func (r *PostgresRepo) GetIncidentsResponse(ctx context.Context) ([]entity.Incid
 func (r *PostgresRepo) StoreIncident(ctx context.Context, incident entity.Incident) (int64, error) {
 	sql, args, err := r.db.Builder.
 		Insert("incidents").
-		Columns("severity_id, description, status_id, create_at, generator_url").
+		Columns("severity_id, description, status_id, assigned, generator_url").
 		Values(
 			incident.SeverityID,
 			incident.Description,
 			incident.StatusID,
-			incident.CreateAt,
+			incident.Assigned,
 			incident.GeneratorURL,
 		).
 		Suffix("RETURNING incident_id"). // Добавляем RETURNING для получения incident_id
@@ -115,7 +120,7 @@ func (r *PostgresRepo) StoreIncident(ctx context.Context, incident entity.Incide
 // GetIncident retrieves a single incident by its ID.
 func (r *PostgresRepo) GetIncident(ctx context.Context, incidentID int64) (entity.Incident, error) {
 	sql, args, err := r.db.Builder.
-		Select("incident_id, severity_id, description, status_id, create_at, generator_url").
+		Select("incident_id, severity_id, description, assigned, status_id, create_at, update_at, generator_url").
 		From("incidents").
 		Where(squirrel.Eq{"incident_id": incidentID}).
 		ToSql()
@@ -128,8 +133,10 @@ func (r *PostgresRepo) GetIncident(ctx context.Context, incidentID int64) (entit
 		&incident.IncidentID,
 		&incident.SeverityID,
 		&incident.Description,
+		&incident.Assigned,
 		&incident.StatusID,
 		&incident.CreateAt,
+		&incident.UpdateAt,
 		&incident.GeneratorURL,
 	)
 	if err != nil {
@@ -141,7 +148,7 @@ func (r *PostgresRepo) GetIncident(ctx context.Context, incidentID int64) (entit
 
 func (r *PostgresRepo) GetIncidentResponse(ctx context.Context, incidentID int64) (entity.IncidentResponse, error) {
 	sql, args, err := r.db.Builder.
-		Select("i.incident_id, s.name AS severity, i.description, is2.name AS status, i.create_at, i.generator_url").
+		Select("i.incident_id, s.name AS severity, i.description, i.assigned, is2.name AS status, s.priority AS priority, i.create_at, i.update_at, i.generator_url").
 		From("incidents i").
 		Join("severities s ON i.severity_id = s.id").
 		Join("incident_states is2 ON i.status_id = is2.id").
@@ -156,8 +163,11 @@ func (r *PostgresRepo) GetIncidentResponse(ctx context.Context, incidentID int64
 		&incident.IncidentID,
 		&incident.Severity,
 		&incident.Description,
+		&incident.Assigned,
 		&incident.Status,
+		&incident.Priority,
 		&incident.CreateAt,
+		&incident.UpdateAt,
 		&incident.GeneratorURL,
 	)
 	if err != nil {
@@ -189,7 +199,7 @@ func (r *PostgresRepo) UpdateIncidentStatus(ctx context.Context, incidentID int6
 // GetListIncidents retrieves a list of incidents starting from a specific index, returning a specific count of incidents.
 func (r *PostgresRepo) GetListIncidents(ctx context.Context, begin, count int) ([]entity.Incident, error) {
 	sql, args, err := r.db.Builder.
-		Select("incident_id, severity_id, description, status_id, create_at, generator_url").
+		Select("incident_id, severity_id, description, assigned, status_id, create_at, update_at, generator_url").
 		From("incidents").
 		OrderBy("create_at DESC").
 		Offset(uint64(begin)).
@@ -213,8 +223,10 @@ func (r *PostgresRepo) GetListIncidents(ctx context.Context, begin, count int) (
 			&incident.IncidentID,
 			&incident.SeverityID,
 			&incident.Description,
+			&incident.Assigned,
 			&incident.StatusID,
 			&incident.CreateAt,
+			&incident.UpdateAt,
 			&incident.GeneratorURL,
 		)
 		if err != nil {
@@ -228,7 +240,7 @@ func (r *PostgresRepo) GetListIncidents(ctx context.Context, begin, count int) (
 
 func (r *PostgresRepo) GetListIncidentsResponse(ctx context.Context, begin, count int) ([]entity.IncidentResponse, error) {
 	sql, args, err := r.db.Builder.
-		Select("i.incident_id, s.name AS severity, i.description, is2.name AS status, i.create_at, i.generator_url").
+		Select("i.incident_id, s.name AS severity, i.description, i.assigned, is2.name AS status, s.priority AS priority, i.create_at, i.update_at, i.generator_url").
 		From("incidents i").
 		Join("severities s ON i.severity_id = s.id").
 		Join("incident_states is2 ON i.status_id = is2.id").
@@ -254,8 +266,11 @@ func (r *PostgresRepo) GetListIncidentsResponse(ctx context.Context, begin, coun
 			&incident.IncidentID,
 			&incident.Severity,
 			&incident.Description,
+			&incident.Assigned,
 			&incident.Status,
+			&incident.Priority,
 			&incident.CreateAt,
+			&incident.UpdateAt,
 			&incident.GeneratorURL,
 		)
 		if err != nil {

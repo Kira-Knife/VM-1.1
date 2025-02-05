@@ -50,7 +50,8 @@ func (r *PostgresRepo) GetIncidentsWithDetails(ctx context.Context) ([]entity.Gr
 	  i.generator_url, 
 	  s.name AS severity, 
 	  is2.name AS status, 
-	  in12.alert_count, 
+	  in12.alert_count,
+	  s.priority AS priority, 
 	  in12.latest_start_at, 
 	  in12.earliest_start_at
 	 FROM 
@@ -93,6 +94,7 @@ func (r *PostgresRepo) GetIncidentsWithDetails(ctx context.Context) ([]entity.Gr
 			&incident.Severity,
 			&incident.Status,
 			&incident.AlertCount,
+			&incident.Priority,
 			&incident.LastStartAt,
 			&incident.FirstStartAt,
 		); err != nil {
@@ -142,7 +144,7 @@ func (r *PostgresRepo) GetListIncidentsWithDetails(ctx context.Context, begin, c
 	}
 
 	sql, args, err := r.db.Builder.
-		Select("i.incident_id, i.description, i.create_at, i.generator_url, s.name AS severity, is2.name AS status, in12.alert_count, in12.latest_start_at, in12.earliest_start_at").
+		Select("i.incident_id, i.description, i.create_at, i.generator_url, s.name AS severity, s.priority AS priority, is2.name AS status, in12.alert_count, in12.latest_start_at, in12.earliest_start_at").
 		From("incidents i").
 		Join("severities s ON i.severity_id = s.id").
 		Join("incident_states is2 ON i.status_id = is2.id").
@@ -170,6 +172,7 @@ func (r *PostgresRepo) GetListIncidentsWithDetails(ctx context.Context, begin, c
 			&incident.CreateAt,
 			&incident.GeneratorURL,
 			&incident.Severity,
+			&incident.Priority,
 			&incident.Status,
 			&incident.AlertCount,
 			&incident.LastStartAt,

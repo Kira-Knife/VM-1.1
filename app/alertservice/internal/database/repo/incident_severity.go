@@ -11,7 +11,7 @@ import (
 // GetSeverity - получение уровня серьезности по ID
 func (r *PostgresRepo) GetSeverity(ctx context.Context, severityID int64) (entity.Severity, error) {
 	sql, args, err := r.db.Builder.
-		Select("id, name, description").
+		Select("id, name, priority").
 		From("severities").
 		Where(squirrel.Eq{"id": severityID}).
 		ToSql()
@@ -25,7 +25,7 @@ func (r *PostgresRepo) GetSeverity(ctx context.Context, severityID int64) (entit
 	err = row.Scan(
 		&severity.ID,
 		&severity.Name,
-		&severity.Description,
+		&severity.Priority,
 	)
 	if err != nil {
 		return entity.Severity{}, fmt.Errorf("SeverityRepo - GetSeverity - row.Scan: %w", err)
@@ -37,7 +37,7 @@ func (r *PostgresRepo) GetSeverity(ctx context.Context, severityID int64) (entit
 // GetSeverities - получение всех уровней серьезности
 func (r *PostgresRepo) GetSeverities(ctx context.Context) ([]entity.Severity, error) {
 	sql, args, err := r.db.Builder.
-		Select("id, name, description").
+		Select("id, name, priority").
 		From("severities").
 		ToSql()
 	if err != nil {
@@ -57,7 +57,7 @@ func (r *PostgresRepo) GetSeverities(ctx context.Context) ([]entity.Severity, er
 		err = rows.Scan(
 			&severity.ID,
 			&severity.Name,
-			&severity.Description,
+			&severity.Priority,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("SeverityRepo - GetSeverities - rows.Scan: %w", err)
