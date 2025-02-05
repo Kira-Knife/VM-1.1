@@ -1,0 +1,12 @@
+drop table incident_alerts cascade;
+drop table vm_alert_serv_alert cascade;
+drop table notifications cascade;
+drop table vm_alert cascade;
+drop table alerts cascade;
+drop table incident_states_task_status cascade;
+drop table incidents cascade;
+drop table incident_states cascade;
+drop table tasks cascade;
+drop table task_status cascade;
+drop table severities cascade;
+commit;

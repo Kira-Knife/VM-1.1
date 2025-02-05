@@ -1,0 +1,697 @@
+basePath: /
+definitions:
+  entity.Alert:
+    properties:
+      alert_id:
+        description: Unique identifier for each alert
+        type: integer
+      alert_name:
+        description: Name of the alert
+        type: string
+      create_at:
+        description: Timestamp when the alert was created
+        type: string
+      description:
+        description: Detailed description of the alert
+        type: string
+      ends_at:
+        description: End time of the alert
+        type: string
+      generator_url:
+        description: URL of the alert generator
+        type: string
+      instance:
+        description: IP and port of the source
+        type: string
+      job:
+        description: Job name, e.g., node_exporter, kafka_exporter
+        type: string
+      service:
+        description: Arbitrary label for service, can be null
+        type: string
+      severity:
+        description: Severity level of the alert
+        type: string
+      starts_at:
+        description: Start time of the alert
+        type: string
+      status:
+        description: Current status of the alert
+        type: string
+      update_at:
+        type: string
+    type: object
+  entity.GroupIncident:
+    properties:
+      alert_count:
+        type: integer
+      create_at:
+        type: string
+      description:
+        description: sql.NullString
+        type: string
+      first_start_at:
+        type: string
+      generator_url:
+        description: sql.NullString
+        type: string
+      incident_id:
+        type: integer
+      instance:
+        description: хост (Grafana) нужно ещё посмотреть на это
+        type: string
+      job:
+        description: Job name, e.g., node_exporter, kafka_exporter (экспортер)
+        type: string
+      last_start_at:
+        type: string
+      priority:
+        type: string
+      service:
+        description: Arbitrary label for service, can be null
+        type: string
+      severity:
+        type: string
+      status:
+        type: string
+    type: object
+  entity.HeatmapHistory:
+    properties:
+      begin_date:
+        type: string
+      count_alerts:
+        type: integer
+      count_incidents:
+        type: integer
+      end_date:
+        type: string
+      statistics_url:
+        type: string
+    type: object
+  entity.HeatmapToday:
+    properties:
+      begin_time:
+        description: дата Date, но время 00:00:01
+        type: string
+      count_alerts:
+        description: число созданных алертов в диапазоне от BeginTime до EndTime
+        type: integer
+      count_incidents:
+        description: число созданных инцидентов в диапазоне от BeginTime до EndTime
+        type: integer
+      date:
+        description: дата, за котороую собирается статистика
+        type: string
+      end_time:
+        description: дата Date, но время 23:59:59
+        type: string
+      statistics_url:
+        description: пока пустое поле
+        type: string
+    type: object
+  entity.IncidentResponse:
+    properties:
+      assigned:
+        description: Assigned
+        type: string
+      create_at:
+        description: Timestamp when the incident was created
+        type: string
+      description:
+        description: Detailed description of the incident
+        type: string
+      generator_url:
+        description: URL of the incident generator
+        type: string
+      incident_id:
+        description: Unique identifier for each incident
+        type: integer
+      priority:
+        description: Level of criticality
+        type: string
+      severity:
+        description: Level of criticality
+        type: string
+      status:
+        description: Current status of the incident
+        type: string
+      update_at:
+        type: string
+    type: object
+  entity.IncidentState:
+    properties:
+      id:
+        description: Unique identifier for each state
+        type: integer
+      name:
+        type: string
+    type: object
+  entity.IntervalSetting:
+    type: object
+  entity.VMAlert:
+    properties:
+      annotations:
+        additionalProperties:
+          type: string
+        type: object
+      dashboardURL:
+        type: string
+      endsAt:
+        type: string
+      fingerprint:
+        type: string
+      generatorURL:
+        type: string
+      labels:
+        additionalProperties:
+          type: string
+        type: object
+      panelURL:
+        type: string
+      silenceURL:
+        type: string
+      startsAt:
+        type: string
+      status:
+        type: string
+      valueString:
+        type: string
+      values: {}
+    type: object
+  entity.VMAlertNotification:
+    properties:
+      alerts:
+        items:
+          $ref: '#/definitions/entity.VMAlert'
+        type: array
+      commonAnnotations:
+        additionalProperties:
+          type: string
+        type: object
+      commonLabels:
+        additionalProperties:
+          type: string
+        type: object
+      externalURL:
+        type: string
+      groupKey:
+        type: string
+      groupLabels:
+        additionalProperties:
+          type: string
+        type: object
+      message:
+        type: string
+      orgId:
+        type: integer
+      receiver:
+        type: string
+      state:
+        type: string
+      status:
+        type: string
+      title:
+        type: string
+      truncatedAlerts:
+        type: integer
+      version:
+        type: string
+    type: object
+  v1.IncidentAssigned:
+    properties:
+      assigned:
+        example: user
+        type: string
+    type: object
+  v1.Status:
+    properties:
+      status:
+        example: Открыт
+        type: string
+    type: object
+host: localhost:8787
+info:
+  contact: {}
+  description: AlertService
+  termsOfService: http://swagger.io/terms/
+  title: AlertService
+  version: "2.0"
+paths:
+  /api/v1/alerts:
+    get:
+      description: Вернет массив всех алертов, отсортированных по дате (по невозрастанию)
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/entity.Alert'
+            type: array
+        "500":
+          description: Ошибка получения данных
+          schema:
+            type: string
+      summary: Получение всех алертов
+      tags:
+      - alerts
+    post:
+      consumes:
+      - application/json
+      description: Принимает уведомления об алертах (алерты) от VM с их дальнейшей
+        обработкой
+      parameters:
+      - description: Json структура уведомления об алертах системы VM
+        in: body
+        name: notification
+        required: true
+        schema:
+          $ref: '#/definitions/entity.VMAlertNotification'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Ошибка в теле запроса
+          schema:
+            type: string
+        "500":
+          description: Ошибка обработки алерта
+          schema:
+            type: string
+      summary: Обработка входящих от VM алертов
+      tags:
+      - alerts
+  /api/v1/alerts/{alert_id}:
+    get:
+      description: Вернет алерт по указанному ID
+      parameters:
+      - description: Alert ID
+        in: path
+        name: alert_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entity.Alert'
+        "400":
+          description: Недопустимые параметры
+          schema:
+            type: string
+        "500":
+          description: Ошибка получения данных
+          schema:
+            type: string
+      summary: Получение алерта по ID
+      tags:
+      - alerts
+  /api/v1/alerts/groups:
+    get:
+      consumes:
+      - application/json
+      description: Возвращает список инцидентов с детализированной информацией, отсортированных
+        по времени начала
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/entity.GroupIncident'
+            type: array
+      summary: Получить сгруппированные инциденты
+      tags:
+      - groups
+  /api/v1/alerts/groups/list:
+    get:
+      consumes:
+      - application/json
+      description: Возвращает список инцидентов с детализированной информацией, отсортированных
+        по времени начала. Начиная с begin в размере count.
+      parameters:
+      - description: Starting alert index
+        in: query
+        name: begin
+        required: true
+        type: integer
+      - description: Number of alerts
+        in: query
+        name: count
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/entity.GroupIncident'
+            type: array
+      summary: Получить сгруппированные инциденты
+      tags:
+      - groups
+  /api/v1/alerts/list:
+    get:
+      description: Вернет список алертов отсортированных по времени начиная с begin
+        в размере count
+      parameters:
+      - description: Начальный индекс
+        in: query
+        name: begin
+        required: true
+        type: integer
+      - description: Колличество получаемых алертов
+        in: query
+        name: count
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/entity.Alert'
+            type: array
+        "400":
+          description: Недопустимые параметры
+          schema:
+            type: string
+        "500":
+          description: Ошибка получения данных
+          schema:
+            type: string
+      summary: Получение списка алертов
+      tags:
+      - alerts
+  /api/v1/heatmap/all:
+    get:
+      description: При данном запросе AlertService возвращает список HeatmapToday
+        (с числом открытых инцидентов и алертов) по каждому дню за прошедшие дни с
+        первой даты, сохраненной в БД, до текущей даты.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/entity.HeatmapToday'
+            type: array
+        "500":
+          description: Ошибка обработки алерта
+          schema:
+            type: string
+      summary: Получение данных по созданным алертами и инцидентам за все прошедшие
+        дни в виде списка по дням
+      tags:
+      - heatmap
+  /api/v1/heatmap/all/close:
+    get:
+      description: При данном запросе AlertService возвращает список HeatmapToday
+        по каждому дню  за прошедшие дни с первой даты, сохраненной в БД, до текущей
+        даты.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/entity.HeatmapToday'
+            type: array
+        "500":
+          description: Ошибка обработки алерта
+          schema:
+            type: string
+      summary: Получение данных по закрытым инцидентам за все прошедшие дни в виде
+        списка по дням
+      tags:
+      - heatmap
+  /api/v1/heatmap/history:
+    get:
+      description: При данном запросе AlertService возвращает полученные динамически
+        агрегированные данные для отображения Heatmap за прошедшие дни с первой даты,
+        сохраненной в БД, до текущей даты.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entity.HeatmapHistory'
+        "500":
+          description: Ошибка обработки алерта
+          schema:
+            type: string
+      summary: Получение общих данных за все прошедшие дни
+      tags:
+      - heatmap
+  /api/v1/heatmap/today:
+    get:
+      description: При данном запросе AlertService возвращает динамически обновляемую
+        статистику по количеству алертов за текущий день - с 00:00:01 до 23:59:59.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entity.HeatmapToday'
+        "500":
+          description: Ошибка обработки алерта
+          schema:
+            type: string
+      summary: Эндпоинт для данных за текущий день
+      tags:
+      - heatmap
+  /api/v1/incident_states:
+    get:
+      description: Retrieve a list of alerts states
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/entity.IncidentState'
+            type: array
+      summary: Get all alerts
+      tags:
+      - state
+  /api/v1/incidents:
+    get:
+      description: Retrieve a list of incidents
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/entity.IncidentResponse'
+            type: array
+      summary: Get all incidents
+      tags:
+      - incidents
+  /api/v1/incidents/{incident_assigned}:
+    get:
+      description: Вернёт все инциденты по исполнителю
+      parameters:
+      - description: Логин назначенного на инцидент пользователя
+        in: path
+        name: incident_assigned
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Invalid incident ID or request body
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Получение инцидентов по исполнителю
+      tags:
+      - incidents
+  /api/v1/incidents/{incident_id}:
+    get:
+      description: Retrieve an incident by its ID
+      parameters:
+      - description: Incident ID
+        in: path
+        name: incident_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entity.IncidentResponse'
+      summary: Get incident by ID
+      tags:
+      - incidents
+  /api/v1/incidents/{incident_id}/alerts/count:
+    get:
+      description: Вернет количество алертов по данногому инциденту (на данный момент
+        у одного инцидента алерты с одним именем)
+      parameters:
+      - description: Incident ID
+        in: path
+        name: incident_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: Получение количества алертов для данного инцидента
+      tags:
+      - incidents
+  /api/v1/incidents/{incident_id}/assigned:
+    patch:
+      description: Обновляет назначенного на инцидент пользователя
+      parameters:
+      - description: Incident ID
+        in: path
+        name: incident_id
+        required: true
+        type: integer
+      - description: Имя нового назначенного на инцидент пользователя
+        in: body
+        name: incident_assigned
+        required: true
+        schema:
+          $ref: '#/definitions/v1.IncidentAssigned'
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Invalid incident ID or request body
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Обновлние назначенного на инцидент пользоватля
+      tags:
+      - incidents
+  /api/v1/incidents/{incident_id}/status:
+    patch:
+      description: Update an existing incident
+      parameters:
+      - description: Incident ID
+        in: path
+        name: incident_id
+        required: true
+        type: integer
+      - description: 'Новый статус. Используйте статусы из списка: Создано, В работе,
+          Решено, Отклонено.'
+        in: body
+        name: incident_status
+        required: true
+        schema:
+          $ref: '#/definitions/v1.Status'
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Invalid incident ID or request body
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Update an incident
+      tags:
+      - incidents
+  /api/v1/incidents/list:
+    get:
+      description: Вернет список инцидентов отсортированных по времени начиная с begin
+        в размере count
+      parameters:
+      - description: Starting incident index
+        in: query
+        name: begin
+        required: true
+        type: integer
+      - description: Number of incidents
+        in: query
+        name: count
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/entity.IncidentResponse'
+            type: array
+      summary: Получение списка инцидентов
+      tags:
+      - incidents
+  /api/v1/settings/interval:
+    get:
+      description: Retrieve the current interval setting
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entity.IntervalSetting'
+      summary: Get interval setting
+      tags:
+      - settings
+    post:
+      consumes:
+      - application/json
+      description: Set a new interval setting
+      parameters:
+      - description: Interval Setting
+        in: body
+        name: interval
+        required: true
+        schema:
+          $ref: '#/definitions/entity.IntervalSetting'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+      summary: Set interval setting
+      tags:
+      - settings
+swagger: "2.0"
