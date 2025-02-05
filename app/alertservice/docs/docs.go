@@ -248,6 +248,35 @@ const docTemplate = `{
         },
         "/api/v1/heatmap/all": {
             "get": {
+                "description": "При данном запросе AlertService возвращает список HeatmapToday (с числом открытых инцидентов и алертов) по каждому дню за прошедшие дни с первой даты, сохраненной в БД, до текущей даты.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "heatmap"
+                ],
+                "summary": "Получение данных по созданным алертами и инцидентам за все прошедшие дни в виде списка по дням",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/entity.HeatmapToday"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Ошибка обработки алерта",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/heatmap/all/close": {
+            "get": {
                 "description": "При данном запросе AlertService возвращает список HeatmapToday по каждому дню  за прошедшие дни с первой даты, сохраненной в БД, до текущей даты.",
                 "produces": [
                     "application/json"
@@ -255,7 +284,7 @@ const docTemplate = `{
                 "tags": [
                     "heatmap"
                 ],
-                "summary": "Получение данных за все прошедшие дни в виде списка по дням",
+                "summary": "Получение данных по закрытым инцидентам за все прошедшие дни в виде списка по дням",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -412,6 +441,47 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/incidents/{incident_assigned}": {
+            "get": {
+                "description": "Вернёт все инциденты по исполнителю",
+                "tags": [
+                    "incidents"
+                ],
+                "summary": "Получение инцидентов по исполнителю",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Логин назначенного на инцидент пользователя",
+                        "name": "incident_assigned",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Invalid incident ID or request body",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/incidents/{incident_id}": {
             "get": {
                 "description": "Retrieve an incident by its ID",
@@ -439,7 +509,85 @@ const docTemplate = `{
                         }
                     }
                 }
-            },
+            }
+        },
+        "/api/v1/incidents/{incident_id}/alerts/count": {
+            "get": {
+                "description": "Вернет количество алертов по данногому инциденту (на данный момент у одного инцидента алерты с одним именем)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "incidents"
+                ],
+                "summary": "Получение количества алертов для данного инцидента",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Incident ID",
+                        "name": "incident_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/api/v1/incidents/{incident_id}/assigned": {
+            "patch": {
+                "description": "Обновляет назначенного на инцидент пользователя",
+                "tags": [
+                    "incidents"
+                ],
+                "summary": "Обновлние назначенного на инцидент пользоватля",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Incident ID",
+                        "name": "incident_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Имя нового назначенного на инцидент пользователя",
+                        "name": "incident_assigned",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/v1.IncidentAssigned"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Invalid incident ID or request body",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/incidents/{incident_id}/status": {
             "patch": {
                 "description": "Update an existing incident",
                 "tags": [
@@ -455,7 +603,7 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "description": "Новый статус. Используйте статусы из списка: Открыт, В работе, Решенный, Отклоненный.",
+                        "description": "Новый статус. Используйте статусы из списка: Создано, В работе, Решено, Отклонено.",
                         "name": "incident_status",
                         "in": "body",
                         "required": true,
@@ -485,32 +633,6 @@ const docTemplate = `{
                                 "type": "string"
                             }
                         }
-                    }
-                }
-            }
-        },
-        "/api/v1/incidents/{incident_id}/alerts/count": {
-            "get": {
-                "description": "Вернет количество алертов по данногому инциденту (на данный момент у одного инцидента алерты с одним именем)",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "incidents"
-                ],
-                "summary": "Получение количества алертов для данного инцидента",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Incident ID",
-                        "name": "incident_id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK"
                     }
                 }
             }
@@ -699,11 +821,11 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "count_alerts": {
-                    "description": "число алертов в диапазоне от BeginTime до EndTime",
+                    "description": "число созданных алертов в диапазоне от BeginTime до EndTime",
                     "type": "integer"
                 },
                 "count_incidents": {
-                    "description": "число инцидентов в диапазоне от BeginTime до EndTime",
+                    "description": "число созданных инцидентов в диапазоне от BeginTime до EndTime",
                     "type": "integer"
                 },
                 "date": {
@@ -876,6 +998,15 @@ const docTemplate = `{
                 },
                 "version": {
                     "type": "string"
+                }
+            }
+        },
+        "v1.IncidentAssigned": {
+            "type": "object",
+            "properties": {
+                "assigned": {
+                    "type": "string",
+                    "example": "user"
                 }
             }
         },

@@ -68,11 +68,11 @@ func (s *Server) getIncidentByID(w http.ResponseWriter, r *http.Request) {
 // @Description Update an existing incident
 // @Tags incidents
 // @Param incident_id path int true "Incident ID"
-// @Param incident_status body Status true "Новый статус. Используйте статусы из списка: Открыт, В работе, Решенный, Отклоненный."
+// @Param incident_status body Status true "Новый статус. Используйте статусы из списка: Создано, В работе, Решено, Отклонено."
 // @Success 200
 // @Failure 400 {object} map[string]string "Invalid incident ID or request body"
 // @Failure 500 {object} map[string]string "Internal server error"
-// @Router /api/v1/incidents/{incident_id} [patch]
+// @Router /api/v1/incidents/{incident_id}/status [patch]
 func (s *Server) updateIncidentStatus(w http.ResponseWriter, r *http.Request) {
 	s.logger.Debug("Run updateIncidentStatus")
 	// Извлечение incident_id из параметров маршрута
@@ -100,6 +100,57 @@ func (s *Server) updateIncidentStatus(w http.ResponseWriter, r *http.Request) {
 	s.logger.Debug("Вызов метода UpdateIncidentStatus")
 	// Вызов метода UpdateIncidentStatus
 	err = s.u.UpdateIncidentStatus(incidentID, requestBody.NewStatus)
+	if err != nil {
+		s.logger.Error(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
+		return
+	}
+
+	// Успешное обновление статуса
+	w.WriteHeader(http.StatusOK) // 200 No Content
+}
+
+type IncidentAssigned struct {
+	Assigned string `json:"assigned" example:"user"`
+}
+
+// @Summary Обновлние назначенного на инцидент пользоватля
+// @Description Обновляет назначенного на инцидент пользователя
+// @Tags incidents
+// @Param incident_id path int true "Incident ID"
+// @Param incident_assigned body IncidentAssigned true "Имя нового назначенного на инцидент пользователя"
+// @Success 200
+// @Failure 400 {object} map[string]string "Invalid incident ID or request body"
+// @Failure 500 {object} map[string]string "Internal server error"
+// @Router /api/v1/incidents/{incident_id}/assigned [patch]
+func (s *Server) updateIncidentAssigned(w http.ResponseWriter, r *http.Request) {
+	s.logger.Debug("Run updateIncidentAssigned")
+	// Извлечение incident_id из параметров маршрута
+	vars := mux.Vars(r)
+	incidentIDStr := vars["incident_id"]                       // Получаем incident_id из параметров
+	incidentID, err := strconv.ParseInt(incidentIDStr, 10, 64) // Преобразуем в int64
+	if err != nil {
+		err = fmt.Errorf("Invalid incident ID: %w", err)
+		s.logger.Error(err)
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
+		return
+	}
+
+	// Извлечение нового исполнителя из тела запроса
+	var incidentAssigned IncidentAssigned
+
+	if err := json.NewDecoder(r.Body).Decode(&incidentAssigned); err != nil {
+		err = fmt.Errorf("Invalid request body: %w", err)
+		s.logger.Error(err)
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
+		return
+	}
+	s.logger.Debug("Вызов метода UpdateIncidentStatus")
+	// Вызов метода UpdateIncidentStatus
+	err = s.u.UpdateIncidentAssigned(r.Context(), incidentID, incidentAssigned.Assigned)
 	if err != nil {
 		s.logger.Error(err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -166,4 +217,36 @@ func (s *Server) getCountOfAlertsForIncident(w http.ResponseWriter, r *http.Requ
 	}
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(alerts_count)
+}
+
+// @Summary Получение инцидентов по исполнителю
+// @Description Вернёт все инциденты по исполнителю
+// @Tags incidents
+// @Param incident_assigned path string true "Логин назначенного на инцидент пользователя"
+// @Success 200
+// @Failure 400 {object} map[string]string "Invalid incident ID or request body"
+// @Failure 500 {object} map[string]string "Internal server error"
+// @Router /api/v1/incidents/{incident_assigned} [get]
+func (s *Server) getIncidentByAssigned(w http.ResponseWriter, r *http.Request) {
+	s.logger.Debug("Run getIncidentByAssigned")
+	vars := mux.Vars(r)
+	assigned, ok := vars["incident_assigned"]
+	if !ok {
+		http.Error(w, "Invalid `incident_assigned`", http.StatusBadRequest)
+		return
+	}
+
+	s.logger.Debug("Вызов метода UpdateIncidentStatus")
+	// Вызов метода UpdateIncidentStatus
+	incRes, err := s.u.GetIncidentByAssigned(r.Context(), assigned)
+	if err != nil {
+		s.logger.Error(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(incRes)
 }

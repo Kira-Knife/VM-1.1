@@ -196,6 +196,25 @@ func (r *PostgresRepo) UpdateIncidentStatus(ctx context.Context, incidentID int6
 	return nil
 }
 
+// UpdateIncidentStatus updates the status of an incident.
+func (r *PostgresRepo) UpdateIncidentAssigned(ctx context.Context, incidentID int64, newAssigned string) error {
+	sql, args, err := r.db.Builder.
+		Update("incidents").
+		Set("assigned", newAssigned).
+		Where(squirrel.Eq{"incident_id": incidentID}).
+		ToSql()
+	if err != nil {
+		return fmt.Errorf("IncidentRepo - UpdateIncidentAssigned - r.Builder: %w", err)
+	}
+
+	_, err = r.db.Pool.Exec(ctx, sql, args...)
+	if err != nil {
+		return fmt.Errorf("IncidentRepo - UpdateIncidentAssigned - r.Pool.Exec: %w", err)
+	}
+
+	return nil
+}
+
 // GetListIncidents retrieves a list of incidents starting from a specific index, returning a specific count of incidents.
 func (r *PostgresRepo) GetListIncidents(ctx context.Context, begin, count int) ([]entity.Incident, error) {
 	sql, args, err := r.db.Builder.
@@ -337,4 +356,46 @@ func (r *PostgresRepo) GetCountOfAlertsForIncident(ctx context.Context, incident
 	}
 
 	return alertCount, nil
+}
+
+func (r *PostgresRepo) GetIncidentResponseByAssigned(ctx context.Context, assigned string) ([]entity.IncidentResponse, error) {
+	sql, args, err := r.db.Builder.
+		Select("i.incident_id, s.name AS severity, i.description, i.assigned, is2.name AS status, s.priority AS priority, i.create_at, i.update_at, i.generator_url").
+		From("incidents i").
+		Join("severities s ON i.severity_id = s.id").
+		Join("incident_states is2 ON i.status_id = is2.id").
+		Where(squirrel.Eq{"i.assigned": assigned}).
+		ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("GetIncident - r.Builder: %w", err)
+	}
+
+	rows, err := r.db.Pool.Query(ctx, sql, args...)
+	if err != nil {
+		return nil, fmt.Errorf("IncidentRepo - GetListIncidents - r.Pool.Query: %w", err)
+	}
+	defer rows.Close()
+
+	incidents := make([]entity.IncidentResponse, 0)
+
+	for rows.Next() {
+		var incident entity.IncidentResponse
+		err = rows.Scan(
+			&incident.IncidentID,
+			&incident.Severity,
+			&incident.Description,
+			&incident.Assigned,
+			&incident.Status,
+			&incident.Priority,
+			&incident.CreateAt,
+			&incident.UpdateAt,
+			&incident.GeneratorURL,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("IncidentRepo - GetListIncidents - rows.Scan: %w", err)
+		}
+		incidents = append(incidents, incident)
+	}
+
+	return incidents, nil
 }

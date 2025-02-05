@@ -45,8 +45,8 @@ func (s *Server) getHeatmapHistory(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// @Summary Получение данных за все прошедшие дни в виде списка по дням
-// @Description При данном запросе AlertService возвращает список HeatmapToday по каждому дню  за прошедшие дни с первой даты, сохраненной в БД, до текущей даты.
+// @Summary Получение данных по созданным алертами и инцидентам за все прошедшие дни в виде списка по дням
+// @Description При данном запросе AlertService возвращает список HeatmapToday (с числом открытых инцидентов и алертов) по каждому дню за прошедшие дни с первой даты, сохраненной в БД, до текущей даты.
 // @Tags heatmap
 // @Produce json
 // @Success 200 {array} entity.HeatmapToday
@@ -55,6 +55,25 @@ func (s *Server) getHeatmapHistory(w http.ResponseWriter, r *http.Request) {
 func (s *Server) getHeatmapAllDays(w http.ResponseWriter, r *http.Request) {
 	// Handler logic
 	data, err := s.u.GetHeatmapAllDays(r.Context())
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(err.Error())
+	} else {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(data)
+	}
+}
+
+// @Summary Получение данных по закрытым инцидентам за все прошедшие дни в виде списка по дням
+// @Description При данном запросе AlertService возвращает список HeatmapToday по каждому дню  за прошедшие дни с первой даты, сохраненной в БД, до текущей даты.
+// @Tags heatmap
+// @Produce json
+// @Success 200 {array} entity.HeatmapToday
+// @Failure 500 {string} string "Ошибка обработки алерта"
+// @Router /api/v1/heatmap/all/close [get]
+func (s *Server) GetHeatmapAllDaysWithStatusClose(w http.ResponseWriter, r *http.Request) {
+	data, err := s.u.GetHeatmapAllDaysWithStatusClose(r.Context())
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(err.Error())

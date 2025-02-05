@@ -92,3 +92,22 @@ func (u *UseCase) GetCountOfAlertsForIncident(incidentID int64) (int64, error) {
 	count_alerts, err := u.db.GetCountOfAlertsForIncident(ctx, incidentID)
 	return count_alerts, err
 }
+
+func (u *UseCase) UpdateIncidentAssigned(ctx context.Context, incidentID int64, newAssigned string) error {
+	// Обновление исполнителя
+	u.logger.Debug("UpdateIncidentAssigned")
+	err := u.db.UpdateIncidentAssigned(ctx, incidentID, newAssigned)
+	if err != nil {
+		return fmt.Errorf("UpdateIncidentAssigned : %w", err)
+	}
+	return nil
+}
+
+func (u *UseCase) GetIncidentByAssigned(ctx context.Context, assigned string) ([]entity.IncidentResponse, error) {
+	u.logger.Debug("GetIncidentByAssigned")
+	insRes, err := u.db.GetIncidentResponseByAssigned(ctx, assigned)
+	if err != nil {
+		return nil, fmt.Errorf("GetIncidentByAssigned : %w", err)
+	}
+	return insRes, nil
+}

@@ -26,16 +26,19 @@ func (s *Server) routeRegistration() {
 	apiRouter.HandleFunc("/alerts/groups", s.GetGroupedIncidents).Methods(http.MethodGet)
 	apiRouter.HandleFunc("/alerts/groups/list", s.GetListGroupedIncidents).Methods(http.MethodGet)
 
-	apiRouter.HandleFunc("/incidents", s.getIncidents).Methods(http.MethodGet)                                                    // -
-	apiRouter.HandleFunc("/incidents/{incidents_id:[0-9]+}", s.getIncidentByID).Methods(http.MethodGet)                           // -
-	apiRouter.HandleFunc("/incidents/{incident_id:[0-9]+}", s.updateIncidentStatus).Methods(http.MethodPatch, http.MethodOptions) // -
+	apiRouter.HandleFunc("/incidents", s.getIncidents).Methods(http.MethodGet)                                                           // -
+	apiRouter.HandleFunc("/incidents/{incidents_id:[0-9]+}", s.getIncidentByID).Methods(http.MethodGet)                                  // -
+	apiRouter.HandleFunc("/incidents/{incident_id:[0-9]+}/status", s.updateIncidentStatus).Methods(http.MethodPatch, http.MethodOptions) // -
+	apiRouter.HandleFunc("/incidents/{incident_id:[0-9]+}/assigned", s.updateIncidentAssigned).Methods(http.MethodPatch, http.MethodOptions)
 	apiRouter.HandleFunc("/incidents/list", s.getListIncidents).Methods(http.MethodGet)
 	apiRouter.HandleFunc("/incidents/{incident_id:[0-9]+}/alerts/count", s.getCountOfAlertsForIncident).Methods(http.MethodGet)
+	apiRouter.HandleFunc("/incidents/{incident_assigned}", s.getIncidentByAssigned).Methods(http.MethodGet)
 
 	// heatmap
 	apiRouter.HandleFunc("/heatmap/today", s.getHeatmapToday).Methods(http.MethodGet)
 	apiRouter.HandleFunc("/heatmap/history", s.getHeatmapHistory).Methods(http.MethodGet)
 	apiRouter.HandleFunc("/heatmap/all", s.getHeatmapAllDays).Methods(http.MethodGet)
+	apiRouter.HandleFunc("/heatmap/all/close", s.GetHeatmapAllDaysWithStatusClose).Methods(http.MethodGet)
 
 	// incident_states
 	apiRouter.HandleFunc("/incident_states", s.getIncidentStates).Methods(http.MethodGet)

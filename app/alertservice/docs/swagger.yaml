@@ -94,10 +94,10 @@ definitions:
         description: дата Date, но время 00:00:01
         type: string
       count_alerts:
-        description: число алертов в диапазоне от BeginTime до EndTime
+        description: число созданных алертов в диапазоне от BeginTime до EndTime
         type: integer
       count_incidents:
-        description: число инцидентов в диапазоне от BeginTime до EndTime
+        description: число созданных инцидентов в диапазоне от BeginTime до EndTime
         type: integer
       date:
         description: дата, за котороую собирается статистика
@@ -215,6 +215,12 @@ definitions:
       truncatedAlerts:
         type: integer
       version:
+        type: string
+    type: object
+  v1.IncidentAssigned:
+    properties:
+      assigned:
+        example: user
         type: string
     type: object
   v1.Status:
@@ -390,6 +396,28 @@ paths:
   /api/v1/heatmap/all:
     get:
       description: При данном запросе AlertService возвращает список HeatmapToday
+        (с числом открытых инцидентов и алертов) по каждому дню за прошедшие дни с
+        первой даты, сохраненной в БД, до текущей даты.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/entity.HeatmapToday'
+            type: array
+        "500":
+          description: Ошибка обработки алерта
+          schema:
+            type: string
+      summary: Получение данных по созданным алертами и инцидентам за все прошедшие
+        дни в виде списка по дням
+      tags:
+      - heatmap
+  /api/v1/heatmap/all/close:
+    get:
+      description: При данном запросе AlertService возвращает список HeatmapToday
         по каждому дню  за прошедшие дни с первой даты, сохраненной в БД, до текущей
         даты.
       produces:
@@ -405,7 +433,8 @@ paths:
           description: Ошибка обработки алерта
           schema:
             type: string
-      summary: Получение данных за все прошедшие дни в виде списка по дням
+      summary: Получение данных по закрытым инцидентам за все прошедшие дни в виде
+        списка по дням
       tags:
       - heatmap
   /api/v1/heatmap/history:
@@ -475,6 +504,33 @@ paths:
       summary: Get all incidents
       tags:
       - incidents
+  /api/v1/incidents/{incident_assigned}:
+    get:
+      description: Вернёт все инциденты по исполнителю
+      parameters:
+      - description: Логин назначенного на инцидент пользователя
+        in: path
+        name: incident_assigned
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Invalid incident ID or request body
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Получение инцидентов по исполнителю
+      tags:
+      - incidents
   /api/v1/incidents/{incident_id}:
     get:
       description: Retrieve an incident by its ID
@@ -494,6 +550,58 @@ paths:
       summary: Get incident by ID
       tags:
       - incidents
+  /api/v1/incidents/{incident_id}/alerts/count:
+    get:
+      description: Вернет количество алертов по данногому инциденту (на данный момент
+        у одного инцидента алерты с одним именем)
+      parameters:
+      - description: Incident ID
+        in: path
+        name: incident_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+      summary: Получение количества алертов для данного инцидента
+      tags:
+      - incidents
+  /api/v1/incidents/{incident_id}/assigned:
+    patch:
+      description: Обновляет назначенного на инцидент пользователя
+      parameters:
+      - description: Incident ID
+        in: path
+        name: incident_id
+        required: true
+        type: integer
+      - description: Имя нового назначенного на инцидент пользователя
+        in: body
+        name: incident_assigned
+        required: true
+        schema:
+          $ref: '#/definitions/v1.IncidentAssigned'
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Invalid incident ID or request body
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Обновлние назначенного на инцидент пользоватля
+      tags:
+      - incidents
+  /api/v1/incidents/{incident_id}/status:
     patch:
       description: Update an existing incident
       parameters:
@@ -502,8 +610,8 @@ paths:
         name: incident_id
         required: true
         type: integer
-      - description: 'Новый статус. Используйте статусы из списка: Открыт, В работе,
-          Решенный, Отклоненный.'
+      - description: 'Новый статус. Используйте статусы из списка: Создано, В работе,
+          Решено, Отклонено.'
         in: body
         name: incident_status
         required: true
@@ -525,24 +633,6 @@ paths:
               type: string
             type: object
       summary: Update an incident
-      tags:
-      - incidents
-  /api/v1/incidents/{incident_id}/alerts/count:
-    get:
-      description: Вернет количество алертов по данногому инциденту (на данный момент
-        у одного инцидента алерты с одним именем)
-      parameters:
-      - description: Incident ID
-        in: path
-        name: incident_id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-      summary: Получение количества алертов для данного инцидента
       tags:
       - incidents
   /api/v1/incidents/list:

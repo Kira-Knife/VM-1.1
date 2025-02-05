@@ -127,7 +127,7 @@ func (r *PostgresRepo) GetCountIncidentsForPeriodWithState(ctx context.Context, 
 	sql, args, err := r.db.Builder.
 		Select("COUNT(*)").
 		From("incidents").
-		Where("create_at >= ? AND create_at <= ? AND status_id = ?", startOfDay, endOfDay, state.Name).
+		Where("update_at >= ? AND update_at <= ? AND status_id = ?", startOfDay, endOfDay, state.ID).
 		ToSql()
 	if err != nil {
 		return 0, fmt.Errorf("PostgresRepo - GetCountIncidentsForPeriod - r.Builder: %w", err)
